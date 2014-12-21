@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>sand.js</title>
+
+	<script src="js/sand.js"></script>
+
+	<script id="shader-fs" type="x-shader/x-fragment">
+		varying highp vec2 vTextureCoord;
+
+		uniform sampler2D uSampler;
+
+		void main(void) {
+			gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+		}
+	</script>
+
+	<script id="shader-vs" type="x-shader/x-vertex">
+		attribute vec3 aVertexPosition;
+		attribute vec2 aTextureCoord;
+
+		uniform mat4 uMVMatrix;
+		uniform mat4 uPMatrix;
+
+		varying highp vec2 vTextureCoord;
+
+		void main(void) {
+			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+
+			vTextureCoord = aTextureCoord;
+		}
+	</script>
+</head>
+
+<body onload="start()">
+	
+
+	<canvas id="glcanvas" width="640" height="480">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
+</body>
+</html>
