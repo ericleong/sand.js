@@ -18,17 +18,44 @@
 
 		void main(void) {
 			if (uAdvance == 1) {
-				// mediump vec4 left = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 640.0, 1.0 / 480.0));
 				mediump vec4 above = texture2D(uSampler, vTextureCoord + vec2(0.0, 1.0 / 480.0));
+				mediump vec4 aboveleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 640.0, 1.0 / 480.0));
+				mediump vec4 aboveright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 640.0, 1.0 / 480.0));
 				mediump vec4 current = texture2D(uSampler, vTextureCoord);
-				mediump vec4 below = texture2D(uSampler, vTextureCoord - vec2(0.0, 1.0 / 480.0));
-				// mediump vec4 right = texture2D(uSampler, vTextureCoord + vec2(1.0 / 640.0, 1.0 / 480.0));
+				mediump vec4 leftleft = texture2D(uSampler, vTextureCoord + vec2(-2.0 / 640.0, 0.0));
+				mediump vec4 left = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 640.0, 0.0));
+				mediump vec4 right = texture2D(uSampler, vTextureCoord + vec2(1.0 / 640.0, 0.0));
+				mediump vec4 rightright = texture2D(uSampler, vTextureCoord + vec2(2.0 / 640.0, 0.0));
+				mediump vec4 below = texture2D(uSampler, vTextureCoord + vec2(0.0, -1.0 / 480.0));
+				mediump vec4 belowleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 640.0, -1.0 / 480.0));
+				mediump vec4 belowright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 640.0, -1.0 / 480.0));
 
-				if (below.g < 0.75 && current.g > 0.25) {
-					gl_FragColor = below;
-				} else if (above.g > 0.75 && current.g < 0.25) {
-					gl_FragColor = above;
+				if (current.g > 0.25) { // occupied cell
+					if (vTextureCoord.y - 1.0 / 480.0 <= 0.0) { // floor
+						gl_FragColor = current;
+					} else if (below.g < 0.75) {
+						gl_FragColor = below;
+					} else if (belowleft.g < 0.75) { // left bias
+						gl_FragColor = belowleft;
+					} else if (belowright.g < 0.75 && rightright.g < 0.75) {
+						gl_FragColor = belowright;
+					} else {
+						gl_FragColor = current;
+					}
+				} else if (current.g < 0.75) { // empty cell
+					if (vTextureCoord.y + 1.0 / 480.0 >= 1.0) {
+						gl_FragColor = current;
+					} else if (above.g > 0.25) {
+						gl_FragColor = above;
+					} else if (aboveright.g > 0.25 && right.g > 0.25) { // (remember the left bias?)
+						gl_FragColor = aboveright;
+					} else if (aboveleft.g > 0.25 && left.g > 0.25 && leftleft.g > 0.25 && vTextureCoord.x >= 0.0) {
+						gl_FragColor = aboveleft;
+					} else {
+						gl_FragColor = current;
+					}
 				} else {
+					// not sure how this can happen
 					gl_FragColor = current;
 				}
 			} else {
