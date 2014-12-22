@@ -70,7 +70,7 @@
 						if (aboveleft.g > 0.25 && left.g > 0.25) {
 							gl_FragColor = aboveleft;
 						} else if (aboveright.g > 0.25 && right.g > 0.25 && rightright.g > 0.25 && vTextureCoord.x <= 1.0) {
-							gl_FragColor = aboveleft;
+							gl_FragColor = aboveright;
 						} else {
 							gl_FragColor = current;
 						}
