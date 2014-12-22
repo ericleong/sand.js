@@ -37,7 +37,7 @@ function initUserInput() {
 		var mousePos = getMousePos(canvas, evt);
 
 		context.beginPath();
-		context.arc(mousePos.x, mousePos.y, 8, 0, 2 * Math.PI, false);
+		context.arc(mousePos.x, mousePos.y, 12, 0, 2 * Math.PI, false);
 		context.fillStyle = 'rgba(255, 255, 255, 1.0)';
 		context.fill();
 
@@ -187,6 +187,7 @@ function drawScene() {
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture1 : sandTexture0);
 	
 	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uAdvance'), 1);
+	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uBias'), sandBuffer);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
