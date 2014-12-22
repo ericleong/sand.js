@@ -14,8 +14,27 @@
 
 		uniform sampler2D uSampler;
 
+		uniform int uAdvance;
+
 		void main(void) {
-			gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+			if (uAdvance == 1) {
+				// mediump vec4 left = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 640.0, 1.0 / 480.0));
+				mediump vec4 above = texture2D(uSampler, vTextureCoord + vec2(0.0, 1.0 / 480.0));
+				mediump vec4 current = texture2D(uSampler, vTextureCoord);
+				mediump vec4 below = texture2D(uSampler, vTextureCoord - vec2(0.0, 1.0 / 480.0));
+				// mediump vec4 right = texture2D(uSampler, vTextureCoord + vec2(1.0 / 640.0, 1.0 / 480.0));
+
+				if (below.g < 0.75 && current.g > 0.25) {
+					gl_FragColor = below;
+				} else if (above.g > 0.75 && current.g < 0.25) {
+					gl_FragColor = above;
+				} else {
+					gl_FragColor = current;
+				}
+			} else {
+				mediump vec4 color = texture2D(uSampler, vTextureCoord);
+				gl_FragColor = vec4(color.r, color.g, color.b, 1.0); // disable alpha
+			}
 		}
 	</script>
 
@@ -23,13 +42,10 @@
 		attribute vec3 aVertexPosition;
 		attribute vec2 aTextureCoord;
 
-		uniform mat4 uMVMatrix;
-		uniform mat4 uPMatrix;
-
 		varying highp vec2 vTextureCoord;
 
 		void main(void) {
-			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+			gl_Position = vec4(aVertexPosition, 1.0);
 
 			vTextureCoord = aTextureCoord;
 		}
