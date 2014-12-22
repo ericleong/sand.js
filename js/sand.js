@@ -37,7 +37,7 @@ function initUserInput() {
 		var mousePos = getMousePos(canvas, evt);
 
 		context.beginPath();
-		context.arc(mousePos.x, mousePos.y, 12, 0, 2 * Math.PI, false);
+		context.arc(mousePos.x, mousePos.y, 16, 0, 2 * Math.PI, false);
 		context.fillStyle = 'rgba(255, 255, 255, 1.0)';
 		context.fill();
 
