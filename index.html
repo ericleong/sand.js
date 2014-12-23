@@ -9,80 +9,85 @@
 
 	<script src="js/sand.js"></script>
 
-	<script id="shader-fs" type="x-shader/x-fragment">
+	<script id="shader-fs-advance" type="x-shader/x-fragment">
 		varying highp vec2 vTextureCoord;
 
 		uniform sampler2D uSampler;
 
-		uniform int uAdvance;
 		uniform int uBias;
 
 		void main(void) {
-			if (uAdvance == 1) {
-				mediump vec4 above = texture2D(uSampler, vTextureCoord + vec2(0.0, 1.0 / 720.0));
-				mediump vec4 aboveleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, 1.0 / 720.0));
-				mediump vec4 aboveright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, 1.0 / 720.0));
-				mediump vec4 current = texture2D(uSampler, vTextureCoord);
-				mediump vec4 leftleft = texture2D(uSampler, vTextureCoord + vec2(-2.0 / 1280.0, 0.0));
-				mediump vec4 left = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, 0.0));
-				mediump vec4 right = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, 0.0));
-				mediump vec4 rightright = texture2D(uSampler, vTextureCoord + vec2(2.0 / 1280.0, 0.0));
-				mediump vec4 below = texture2D(uSampler, vTextureCoord + vec2(0.0, -1.0 / 720.0));
-				mediump vec4 belowleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, -1.0 / 720.0));
-				mediump vec4 belowright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, -1.0 / 720.0));
+			mediump vec4 above = texture2D(uSampler, vTextureCoord + vec2(0.0, 1.0 / 720.0));
+			mediump vec4 aboveleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, 1.0 / 720.0));
+			mediump vec4 aboveright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, 1.0 / 720.0));
+			mediump vec4 current = texture2D(uSampler, vTextureCoord);
+			mediump vec4 leftleft = texture2D(uSampler, vTextureCoord + vec2(-2.0 / 1280.0, 0.0));
+			mediump vec4 left = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, 0.0));
+			mediump vec4 right = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, 0.0));
+			mediump vec4 rightright = texture2D(uSampler, vTextureCoord + vec2(2.0 / 1280.0, 0.0));
+			mediump vec4 below = texture2D(uSampler, vTextureCoord + vec2(0.0, -1.0 / 720.0));
+			mediump vec4 belowleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, -1.0 / 720.0));
+			mediump vec4 belowright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, -1.0 / 720.0));
 
-				if (current.g > 0.25) { // occupied cell
-					if (vTextureCoord.y - 1.0 / 720.0 <= 0.0) { // floor
-						gl_FragColor = current;
-					} else if (below.g < 0.75) {
-						gl_FragColor = below;
-					} else if (uBias == 0) {
-						if (belowleft.g < 0.75) { // left bias
-							gl_FragColor = belowleft;
-						} else if (belowright.g < 0.75 && rightright.g < 0.75) {
-							gl_FragColor = belowright;
-						} else {
-							gl_FragColor = current;
-						}
+			if (current.g > 0.25) { // occupied cell
+				if (vTextureCoord.y - 1.0 / 720.0 <= 0.0) { // floor
+					gl_FragColor = current;
+				} else if (below.g < 0.75) {
+					gl_FragColor = below;
+				} else if (uBias == 0) {
+					if (belowleft.g < 0.75) { // left bias
+						gl_FragColor = belowleft;
+					} else if (belowright.g < 0.75 && rightright.g < 0.75) {
+						gl_FragColor = belowright;
 					} else {
-						if (belowright.g < 0.75) { // right bias
-							gl_FragColor = belowright;
-						} else if (belowleft.g < 0.75 && leftleft.g < 0.75) {
-							gl_FragColor = belowleft;
-						} else {
-							gl_FragColor = current;
-						}
-					}
-				} else if (current.g < 0.75) { // empty cell
-					if (vTextureCoord.y + 1.0 / 720.0 >= 1.0) { // ceiling
 						gl_FragColor = current;
-					} else if (above.g > 0.25) {
-						gl_FragColor = above;
-					} else if (uBias == 0) { // left bias
-						if (aboveright.g > 0.25 && right.g > 0.25) {
-							gl_FragColor = aboveright;
-						} else if (aboveleft.g > 0.25 && left.g > 0.25 && leftleft.g > 0.25 && vTextureCoord.x >= 0.0) {
-							gl_FragColor = aboveleft;
-						} else {
-							gl_FragColor = current;
-						}
-					} else { // right bias
-						if (aboveleft.g > 0.25 && left.g > 0.25) {
-							gl_FragColor = aboveleft;
-						} else if (aboveright.g > 0.25 && right.g > 0.25 && rightright.g > 0.25 && vTextureCoord.x <= 1.0) {
-							gl_FragColor = aboveright;
-						} else {
-							gl_FragColor = current;
-						}
 					}
 				} else {
-					// not sure how this can happen
+					if (belowright.g < 0.75) { // right bias
+						gl_FragColor = belowright;
+					} else if (belowleft.g < 0.75 && leftleft.g < 0.75) {
+						gl_FragColor = belowleft;
+					} else {
+						gl_FragColor = current;
+					}
+				}
+			} else if (current.g < 0.75) { // empty cell
+				if (vTextureCoord.y + 1.0 / 720.0 >= 1.0) { // ceiling
 					gl_FragColor = current;
+				} else if (above.g > 0.25) {
+					gl_FragColor = above;
+				} else if (uBias == 0) { // left bias
+					if (aboveright.g > 0.25 && right.g > 0.25) {
+						gl_FragColor = aboveright;
+					} else if (aboveleft.g > 0.25 && left.g > 0.25 && leftleft.g > 0.25 && vTextureCoord.x >= 0.0) {
+						gl_FragColor = aboveleft;
+					} else {
+						gl_FragColor = current;
+					}
+				} else { // right bias
+					if (aboveleft.g > 0.25 && left.g > 0.25) {
+						gl_FragColor = aboveleft;
+					} else if (aboveright.g > 0.25 && right.g > 0.25 && rightright.g > 0.25 && vTextureCoord.x <= 1.0) {
+						gl_FragColor = aboveright;
+					} else {
+						gl_FragColor = current;
+					}
 				}
 			} else {
-				mediump vec4 color = texture2D(uSampler, vTextureCoord);
-				gl_FragColor = vec4(color.r, color.g, color.b, 1.0); // disable alpha
+				// not sure how this can happen
+				gl_FragColor = current;
 			}
+		}
+	</script>
+
+	<script id="shader-fs-copy" type="x-shader/x-fragment">
+		varying highp vec2 vTextureCoord;
+
+		uniform sampler2D uSampler;
+
+		void main(void) {
+			mediump vec4 color = texture2D(uSampler, vTextureCoord);
+			gl_FragColor = vec4(color.r, color.g, color.b, 1.0); // disable alpha
 		}
 	</script>
 
