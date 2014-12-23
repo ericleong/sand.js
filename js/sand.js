@@ -9,7 +9,7 @@ var sandFrameBuffer0, sandFrameBuffer1;
 
 var rectVerticesBuffer;
 var rectVerticesTextureCoordBuffer;
-var shaderProgram;
+var copyProgram, advanceProgram;
 var vertexPositionAttribute;
 var textureCoordAttribute;
 
@@ -157,13 +157,24 @@ function initBuffers() {
 }
 
 //
-// drawScene
+// advance
 //
-// Draw the scene.
+// Advance the scene.
 //
-function drawScene() {
+function advance() {
 	sandBuffer = sandBuffer == 0 ? 1 : 0;
 
+	/* advance */
+
+	gl.useProgram(advanceProgram);
+	
+	vertexPositionAttribute = gl.getAttribLocation(advanceProgram, 'aVertexPosition');
+	gl.enableVertexAttribArray(vertexPositionAttribute);
+
+	textureCoordAttribute = gl.getAttribLocation(advanceProgram, 'aTextureCoord');
+	gl.enableVertexAttribArray(textureCoordAttribute);
+
+	// draw onto framebuffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, sandBuffer == 0 ? sandFrameBuffer0 : sandFrameBuffer1);
 
 	// Clear the canvas before we start drawing on it.
@@ -181,21 +192,42 @@ function drawScene() {
 	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 	
 	// Specify the texture to map onto the face.
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
+	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uSampler'), 0);
 	
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture1 : sandTexture0);
 	
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uAdvance'), 1);
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uBias'), sandBuffer);
+	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uBias'), sandBuffer);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+	/* add user input */
+
+	gl.useProgram(copyProgram);
+	
+	vertexPositionAttribute = gl.getAttribLocation(copyProgram, 'aVertexPosition');
+	gl.enableVertexAttribArray(vertexPositionAttribute);
+
+	textureCoordAttribute = gl.getAttribLocation(copyProgram, 'aTextureCoord');
+	gl.enableVertexAttribArray(textureCoordAttribute);
+
+	// Draw the rect by binding the array buffer to the rect's vertices
+	// array, setting attributes, and pushing it to GL.
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
+	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+	// Set the texture coordinates attribute for the vertices.
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
+	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+	// Specify the texture to map onto the face.
+	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
 
 	// draw user input
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, rectTexture);
-
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uAdvance'), 0);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -203,6 +235,18 @@ function drawScene() {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, rectFrameBuffer);
 
 	gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
+function drawScene() {
+	/* copy framebuffer to screen */
+
+	gl.useProgram(copyProgram);
+	
+	vertexPositionAttribute = gl.getAttribLocation(copyProgram, 'aVertexPosition');
+	gl.enableVertexAttribArray(vertexPositionAttribute);
+
+	textureCoordAttribute = gl.getAttribLocation(copyProgram, 'aTextureCoord');
+	gl.enableVertexAttribArray(textureCoordAttribute);
 
 	// draw onto screen
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -220,12 +264,10 @@ function drawScene() {
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
 	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0);
+	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
 
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture0 : sandTexture1);
-
-	gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uAdvance'), 0);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -238,29 +280,38 @@ function drawScene() {
 // Initialize the shaders, so WebGL knows how to light our scene.
 //
 function initShaders() {
-	var fragmentShader = getShader(gl, 'shader-fs');
+
 	var vertexShader = getShader(gl, 'shader-vs');
+
+	// copy
+	var copyFragmentShader = getShader(gl, 'shader-fs-copy');
 	
-	// Create the shader program
-	
-	shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
+	copyProgram = gl.createProgram();
+	gl.attachShader(copyProgram, vertexShader);
+	gl.attachShader(copyProgram, copyFragmentShader);
+	gl.linkProgram(copyProgram);
 	
 	// If creating the shader program failed, alert
 	
-	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+	if (!gl.getProgramParameter(copyProgram, gl.LINK_STATUS)) {
 		alert('Unable to initialize the shader program.');
 	}
-	
-	gl.useProgram(shaderProgram);
-	
-	vertexPositionAttribute = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(vertexPositionAttribute);
 
-	textureCoordAttribute = gl.getAttribLocation(shaderProgram, 'aTextureCoord');
-	gl.enableVertexAttribArray(textureCoordAttribute);
+	// advance
+	var advanceFragmentShader = getShader(gl, 'shader-fs-advance');
+	
+	// Create the shader programs
+	
+	advanceProgram = gl.createProgram();
+	gl.attachShader(advanceProgram, vertexShader);
+	gl.attachShader(advanceProgram, advanceFragmentShader);
+	gl.linkProgram(advanceProgram);
+	
+	// If creating the shader program failed, alert
+	
+	if (!gl.getProgramParameter(advanceProgram, gl.LINK_STATUS)) {
+		alert('Unable to initialize the shader program.');
+	}
 }
 
 //
@@ -360,6 +411,8 @@ function handleTextureLoaded(image) {
 	sandFrameBuffer1 = tex[1];
 
 	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	setInterval(advance, 8);
 
 	// Set up to draw the scene periodically.
 	window.requestAnimationFrame(drawScene);
