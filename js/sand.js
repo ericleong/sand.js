@@ -13,12 +13,19 @@ var copyProgram, advanceProgram;
 var vertexPositionAttribute;
 var textureCoordAttribute;
 
+// user input
+var painter;
+var context;
+
+var down = false;
+var color = 'rgba(255, 255, 255, 1.0)';
+
 function initUserInput() {
 	var canvas = document.getElementById('glcanvas');
+	painter = document.createElement('canvas');
+	context = painter.getContext('2d');
 	
 	// create a new canvas
-	var painter = document.createElement('canvas');
-	var context = painter.getContext('2d');
 	context.imageSmoothingEnabled = false;
 
 	// set dimensions
@@ -33,12 +40,12 @@ function initUserInput() {
 		};
 	}
 
-	canvas.addEventListener('mousemove', function(evt) {
+	function drawCircle(context, canvas, evt) {
 		var mousePos = getMousePos(canvas, evt);
 
 		context.beginPath();
-		context.arc(mousePos.x, mousePos.y, 16, 0, 2 * Math.PI, false);
-		context.fillStyle = 'rgba(255, 255, 255, 1.0)';
+		context.arc(mousePos.x, mousePos.y, 12, 0, 2 * Math.PI, false);
+		context.fillStyle = color;
 		context.fill();
 
 		gl.bindTexture(gl.TEXTURE_2D, rectTexture);
@@ -46,7 +53,29 @@ function initUserInput() {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, painter);
 
 		context.clearRect(0, 0, painter.width, painter.height);
-	}, false);
+	}
+
+	canvas.addEventListener('mousedown', function(evt) {
+		down = true;
+
+		if (evt.ctrlKey) {
+			color = 'rgba(0, 255, 255, 1.0)';
+		} else {
+			color = 'rgba(255, 255, 255, 1.0)';
+		}
+
+		drawCircle(context, canvas, evt);
+	}, true);
+
+	canvas.addEventListener('mouseup', function(evt) {
+		down = false;
+	}, true);
+
+	canvas.addEventListener('mousemove', function(evt) {
+		if (down) {
+			drawCircle(context, canvas, evt);
+		}
+	}, true);
 }
 
 //
@@ -66,7 +95,7 @@ function start() {
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 		gl.enable(gl.BLEND);
 		gl.disable(gl.DEPTH_TEST);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+		gl.blendFunc(gl.ONE, gl.ONE);
 		
 		// Initialize the shaders; this is where all the lighting for the
 		// vertices and so forth is established.
