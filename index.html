@@ -73,45 +73,45 @@
 			mediump vec4 belowright = texture2D(uSampler, vTextureCoordBelowRight);
 			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoordBelowRightRight);
 
-			if (current.g > 0.25 && current.r > 0.25) { // occupied cell
+			if (current.g > below.g) { // occupied cell
 				if (vTextureCoord.y - 1.0 / 720.0 <= 0.0) { // floor
 					gl_FragColor = current;
-				} else if (below.g < 0.75) {
+				} else if (below.g < current.g) {
 					gl_FragColor = below;
 				} else if (uBias == 0) {
-					if (belowleft.g < 0.75 && left.g < 0.75) { // left bias
+					if (belowleft.g < current.g && left.g <= belowleft.g) { // left bias
 						gl_FragColor = belowleft;
-					} else if (belowright.g < 0.75 && right.g < 0.75 && (rightright.g < 0.75 || belowrightright.g < 0.75)) {
+					} else if (belowright.g < current.g && right.g < belowright.g && (rightright.g <= belowright.g || belowrightright.g <= rightright.g)) {
 						gl_FragColor = belowright;
 					} else {
 						gl_FragColor = current;
 					}
 				} else {
-					if (belowright.g < 0.75 && right.g < 0.75) { // right bias
+					if (belowright.g < current.g && right.g <= belowright.g) { // right bias
 						gl_FragColor = belowright;
-					} else if (belowleft.g < 0.75 && left.g < 0.75 && (leftleft.g < 0.75 || belowleftleft.g < 0.75)) {
+					} else if (belowleft.g < current.g && left.g < belowleft.g && (leftleft.g <= belowleft.g || belowleftleft.g <= leftleft.g)) {
 						gl_FragColor = belowleft;
 					} else {
 						gl_FragColor = current;
 					}
 				}
-			} else if (current.g < 0.75) { // empty cell
+			} else if (current.g < above.g) { // empty cell
 				if (vTextureCoord.y + 1.0 / 720.0 >= 1.0) { // ceiling
 					gl_FragColor = current;
-				} else if (above.g > 0.25 && above.r > 0.25) {
+				} else if (above.g > current.g) {
 					gl_FragColor = above;
 				} else if (uBias == 0) { // left bias
-					if (aboveright.g > 0.25 && right.g > 0.25 && aboveright.r > 0.25) {
+					if (aboveright.g > current.g && right.g >= aboveright.g) {
 						gl_FragColor = aboveright;
-					} else if (aboveleft.g > 0.25 && left.g > 0.25 && (leftleft.g > 0.25 || aboveleftleft.g > 0.25) && vTextureCoord.x >= 0.0 && aboveleft.r > 0.25) {
+					} else if (aboveleft.g > current.g && left.g > aboveleft.g && (leftleft.g >= aboveleft.g || aboveleftleft.g >= leftleft.g) && vTextureCoord.x >= 0.0) {
 						gl_FragColor = aboveleft;
 					} else {
 						gl_FragColor = current;
 					}
 				} else { // right bias
-					if (aboveleft.g > 0.25 && left.g > 0.25 && aboveleft.r > 0.25) {
+					if (aboveleft.g > current.g && left.g >= aboveleft.g) {
 						gl_FragColor = aboveleft;
-					} else if (aboveright.g > 0.25 && right.g > 0.25 && (rightright.g > 0.25 || aboverightright.g > 0.25) && vTextureCoord.x <= 1.0 && aboveright.r > 0.25) {
+					} else if (aboveright.g > current.g && right.g > aboveright.g && (rightright.g >= aboveleft.g || aboverightright.g >= rightright.g) && vTextureCoord.x <= 1.0) {
 						gl_FragColor = aboveright;
 					} else {
 						gl_FragColor = current;

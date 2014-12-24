@@ -58,7 +58,7 @@ function initUserInput() {
 		down = true;
 
 		if (evt.shiftKey) {
-			color = 'rgba(0, 255, 255, 1.0)';
+			color = 'rgba(128, 128, 128, 1.0)';
 		} else if (evt.ctrlKey) {
 			color = 'rgba(0, 0, 0, 1.0)';
 		} else {
