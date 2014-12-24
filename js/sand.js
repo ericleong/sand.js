@@ -313,37 +313,29 @@ function drawScene() {
 //
 function initShaders() {
 
-	// copy
-	var copyVertexShader = getShader(gl, 'shader-vs-copy');
-	var copyFragmentShader = getShader(gl, 'shader-fs-copy');
-	
-	copyProgram = gl.createProgram();
-	gl.attachShader(copyProgram, copyVertexShader);
-	gl.attachShader(copyProgram, copyFragmentShader);
-	gl.linkProgram(copyProgram);
-	
-	// If creating the shader program failed, alert
-	
-	if (!gl.getProgramParameter(copyProgram, gl.LINK_STATUS)) {
-		alert('Unable to initialize the shader program.');
-	}
+	copyProgram = createProgram('shader-vs-copy', 'shader-fs-copy');
+	advanceProgram = createProgram('shader-vs-advance', 'shader-fs-advance');
+}
 
-	// advance
-	var advanceVertexShader = getShader(gl, 'shader-vs-advance');
-	var advanceFragmentShader = getShader(gl, 'shader-fs-advance');
+function createProgram(vertexShaderId, fragmentShaderId) {
+
+	var vertexShader = getShader(gl, vertexShaderId);
+	var fragmentShader = getShader(gl, fragmentShaderId);
 	
 	// Create the shader programs
 	
-	advanceProgram = gl.createProgram();
-	gl.attachShader(advanceProgram, advanceVertexShader);
-	gl.attachShader(advanceProgram, advanceFragmentShader);
-	gl.linkProgram(advanceProgram);
+	var program = gl.createProgram();
+	gl.attachShader(program, vertexShader);
+	gl.attachShader(program, fragmentShader);
+	gl.linkProgram(program);
 	
 	// If creating the shader program failed, alert
 	
-	if (!gl.getProgramParameter(advanceProgram, gl.LINK_STATUS)) {
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 		alert('Unable to initialize the shader program.');
 	}
+
+	return program;
 }
 
 //
