@@ -43,10 +43,9 @@ function initUserInput() {
 	function drawCircle(context, canvas, evt) {
 		var mousePos = getMousePos(canvas, evt);
 
-		context.beginPath();
-		context.arc(mousePos.x, mousePos.y, 12, 0, 2 * Math.PI, false);
 		context.fillStyle = color;
-		context.fill();
+		// use a rectangle because circles are antialiased
+		context.fillRect(mousePos.x - 12, mousePos.y - 12, 24, 24);
 
 		gl.bindTexture(gl.TEXTURE_2D, rectTexture);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -58,8 +57,10 @@ function initUserInput() {
 	canvas.addEventListener('mousedown', function(evt) {
 		down = true;
 
-		if (evt.ctrlKey) {
+		if (evt.shiftKey) {
 			color = 'rgba(0, 255, 255, 1.0)';
+		} else if (evt.ctrlKey) {
+			color = 'rgba(0, 0, 0, 1.0)';
 		} else {
 			color = 'rgba(255, 255, 255, 1.0)';
 		}
@@ -92,10 +93,9 @@ function start() {
 	// Only continue if WebGL is available and working
 	
 	if (gl) {
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 		gl.enable(gl.BLEND);
 		gl.disable(gl.DEPTH_TEST);
-		gl.blendFunc(gl.ONE, gl.ONE);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		
 		// Initialize the shaders; this is where all the lighting for the
 		// vertices and so forth is established.
@@ -207,6 +207,7 @@ function advance() {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, sandBuffer == 0 ? sandFrameBuffer0 : sandFrameBuffer1);
 
 	// Clear the canvas before we start drawing on it.
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	// Draw the rect by binding the array buffer to the rect's vertices
@@ -263,6 +264,7 @@ function advance() {
 	// clear user input
 	gl.bindFramebuffer(gl.FRAMEBUFFER, rectFrameBuffer);
 
+	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
 	gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
@@ -280,6 +282,7 @@ function drawScene() {
 	// draw onto screen
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	// Draw the rect by binding the array buffer to the rect's vertices

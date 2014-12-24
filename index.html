@@ -90,8 +90,7 @@
 		uniform sampler2D uSampler;
 
 		void main(void) {
-			mediump vec4 color = texture2D(uSampler, vTextureCoord);
-			gl_FragColor = vec4(color.r, color.g, color.b, 1.0); // disable alpha
+			gl_FragColor = texture2D(uSampler, vTextureCoord);
 		}
 	</script>
 
