@@ -9,29 +9,69 @@
 
 	<script src="js/sand.js"></script>
 
+	<script id="shader-fs-copy" type="x-shader/x-fragment">
+		varying highp vec2 vTextureCoord;
+
+		uniform sampler2D uSampler;
+
+		void main(void) {
+			gl_FragColor = texture2D(uSampler, vTextureCoord);
+		}
+	</script>
+
+	<script id="shader-vs-copy" type="x-shader/x-vertex">
+		attribute vec3 aVertexPosition;
+		attribute vec2 aTextureCoord;
+
+		varying highp vec2 vTextureCoord;
+
+		void main(void) {
+			gl_Position = vec4(aVertexPosition, 1.0);
+
+			vTextureCoord = aTextureCoord;
+		}
+	</script>
+
 	<script id="shader-fs-advance" type="x-shader/x-fragment">
 		varying highp vec2 vTextureCoord;
+
+		varying highp vec2 vTextureCoordAbove;
+		varying highp vec2 vTextureCoordAboveLeft;
+		varying highp vec2 vTextureCoordAboveLeftLeft;
+		varying highp vec2 vTextureCoordAboveRight;
+		varying highp vec2 vTextureCoordAboveRightRight;
+
+		varying highp vec2 vTextureCoordLeft;
+		varying highp vec2 vTextureCoordLeftLeft;
+		varying highp vec2 vTextureCoordRight;
+		varying highp vec2 vTextureCoordRightRight;
+		
+		varying highp vec2 vTextureCoordBelow;
+		varying highp vec2 vTextureCoordBelowLeft;
+		varying highp vec2 vTextureCoordBelowLeftLeft;
+		varying highp vec2 vTextureCoordBelowRight;
+		varying highp vec2 vTextureCoordBelowRightRight;
 
 		uniform sampler2D uSampler;
 
 		uniform int uBias;
 
 		void main(void) {
-			mediump vec4 above = texture2D(uSampler, vTextureCoord + vec2(0.0, 1.0 / 720.0));
-			mediump vec4 aboveleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, 1.0 / 720.0));
-			mediump vec4 aboveleftleft = texture2D(uSampler, vTextureCoord + vec2(-2.0 / 1280.0, 1.0 / 720.0));
-			mediump vec4 aboveright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, 1.0 / 720.0));
-			mediump vec4 aboverightright = texture2D(uSampler, vTextureCoord + vec2(2.0 / 1280.0, 1.0 / 720.0));
+			mediump vec4 above = texture2D(uSampler, vTextureCoordAbove);
+			mediump vec4 aboveleft = texture2D(uSampler, vTextureCoordAboveLeft);
+			mediump vec4 aboveleftleft = texture2D(uSampler, vTextureCoordAboveLeftLeft);
+			mediump vec4 aboveright = texture2D(uSampler, vTextureCoordAboveRight);
+			mediump vec4 aboverightright = texture2D(uSampler, vTextureCoordAboveRightRight);
 			mediump vec4 current = texture2D(uSampler, vTextureCoord);
-			mediump vec4 leftleft = texture2D(uSampler, vTextureCoord + vec2(-2.0 / 1280.0, 0.0));
-			mediump vec4 left = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, 0.0));
-			mediump vec4 right = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, 0.0));
-			mediump vec4 rightright = texture2D(uSampler, vTextureCoord + vec2(2.0 / 1280.0, 0.0));
-			mediump vec4 below = texture2D(uSampler, vTextureCoord + vec2(0.0, -1.0 / 720.0));
-			mediump vec4 belowleft = texture2D(uSampler, vTextureCoord + vec2(-1.0 / 1280.0, -1.0 / 720.0));
-			mediump vec4 belowleftleft = texture2D(uSampler, vTextureCoord + vec2(-2.0 / 1280.0, -1.0 / 720.0));
-			mediump vec4 belowright = texture2D(uSampler, vTextureCoord + vec2(1.0 / 1280.0, -1.0 / 720.0));
-			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoord + vec2(2.0 / 1280.0, -1.0 / 720.0));
+			mediump vec4 leftleft = texture2D(uSampler, vTextureCoordLeftLeft);
+			mediump vec4 left = texture2D(uSampler, vTextureCoordLeft);
+			mediump vec4 right = texture2D(uSampler, vTextureCoordRight);
+			mediump vec4 rightright = texture2D(uSampler, vTextureCoordRightRight);
+			mediump vec4 below = texture2D(uSampler, vTextureCoordBelow);
+			mediump vec4 belowleft = texture2D(uSampler, vTextureCoordBelowLeft);
+			mediump vec4 belowleftleft = texture2D(uSampler, vTextureCoordBelowLeftLeft);
+			mediump vec4 belowright = texture2D(uSampler, vTextureCoordBelowRight);
+			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoordBelowRightRight);
 
 			if (current.g > 0.25 && current.r > 0.25) { // occupied cell
 				if (vTextureCoord.y - 1.0 / 720.0 <= 0.0) { // floor
@@ -84,26 +124,49 @@
 		}
 	</script>
 
-	<script id="shader-fs-copy" type="x-shader/x-fragment">
-		varying highp vec2 vTextureCoord;
-
-		uniform sampler2D uSampler;
-
-		void main(void) {
-			gl_FragColor = texture2D(uSampler, vTextureCoord);
-		}
-	</script>
-
-	<script id="shader-vs" type="x-shader/x-vertex">
+	<script id="shader-vs-advance" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec2 aTextureCoord;
 
 		varying highp vec2 vTextureCoord;
+		
+		varying highp vec2 vTextureCoordAbove;
+		varying highp vec2 vTextureCoordAboveLeft;
+		varying highp vec2 vTextureCoordAboveLeftLeft;
+		varying highp vec2 vTextureCoordAboveRight;
+		varying highp vec2 vTextureCoordAboveRightRight;
+
+		varying highp vec2 vTextureCoordLeft;
+		varying highp vec2 vTextureCoordLeftLeft;
+		varying highp vec2 vTextureCoordRight;
+		varying highp vec2 vTextureCoordRightRight;
+		
+		varying highp vec2 vTextureCoordBelow;
+		varying highp vec2 vTextureCoordBelowLeft;
+		varying highp vec2 vTextureCoordBelowLeftLeft;
+		varying highp vec2 vTextureCoordBelowRight;
+		varying highp vec2 vTextureCoordBelowRightRight;
 
 		void main(void) {
 			gl_Position = vec4(aVertexPosition, 1.0);
 
 			vTextureCoord = aTextureCoord;
+			vTextureCoordAbove = aTextureCoord + vec2(0.0, 1.0 / 720.0);
+			vTextureCoordAboveLeft = aTextureCoord + vec2(-1.0 / 1280.0, 1.0 / 720.0);
+			vTextureCoordAboveLeftLeft = aTextureCoord + vec2(-2.0 / 1280.0, 1.0 / 720.0);
+			vTextureCoordAboveRight = aTextureCoord + vec2(1.0 / 1280.0, 1.0 / 720.0);
+			vTextureCoordAboveRightRight = aTextureCoord + vec2(2.0 / 1280.0, 1.0 / 720.0);
+
+			vTextureCoordLeft = aTextureCoord + vec2(-1.0 / 1280.0, 0.0);
+			vTextureCoordLeftLeft = aTextureCoord + vec2(-2.0 / 1280.0, 0.0);
+			vTextureCoordRight = aTextureCoord + vec2(1.0 / 1280.0, 0.0);
+			vTextureCoordRightRight = aTextureCoord + vec2(2.0 / 1280.0, 0.0);
+		
+			vTextureCoordBelow = aTextureCoord + vec2(0.0, -1.0 / 720.0);
+			vTextureCoordBelowLeft = aTextureCoord + vec2(-1.0 / 1280.0, -1.0 / 720.0);
+			vTextureCoordBelowLeftLeft = aTextureCoord + vec2(-2.0 / 1280.0, -1.0 / 720.0);
+			vTextureCoordBelowRight = aTextureCoord + vec2(1.0 / 1280.0, -1.0 / 720.0);
+			vTextureCoordBelowRightRight = aTextureCoord + vec2(2.0 / 1280.0, -1.0 / 720.0);
 		}
 	</script>
 </head>

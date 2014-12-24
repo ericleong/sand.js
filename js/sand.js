@@ -313,13 +313,12 @@ function drawScene() {
 //
 function initShaders() {
 
-	var vertexShader = getShader(gl, 'shader-vs');
-
 	// copy
+	var copyVertexShader = getShader(gl, 'shader-vs-copy');
 	var copyFragmentShader = getShader(gl, 'shader-fs-copy');
 	
 	copyProgram = gl.createProgram();
-	gl.attachShader(copyProgram, vertexShader);
+	gl.attachShader(copyProgram, copyVertexShader);
 	gl.attachShader(copyProgram, copyFragmentShader);
 	gl.linkProgram(copyProgram);
 	
@@ -330,12 +329,13 @@ function initShaders() {
 	}
 
 	// advance
+	var advanceVertexShader = getShader(gl, 'shader-vs-advance');
 	var advanceFragmentShader = getShader(gl, 'shader-fs-advance');
 	
 	// Create the shader programs
 	
 	advanceProgram = gl.createProgram();
-	gl.attachShader(advanceProgram, vertexShader);
+	gl.attachShader(advanceProgram, advanceVertexShader);
 	gl.attachShader(advanceProgram, advanceFragmentShader);
 	gl.linkProgram(advanceProgram);
 	
