@@ -73,7 +73,7 @@
 			mediump vec4 belowright = texture2D(uSampler, vTextureCoordBelowRight);
 			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoordBelowRightRight);
 
-			if (current.g > below.g) { // occupied cell
+			if (current.g > 0.25) { // occupied cell
 				if (vTextureCoord.y - 1.0 / 720.0 <= 0.0) { // floor
 					gl_FragColor = current;
 				} else if (below.g < current.g) {
@@ -95,7 +95,7 @@
 						gl_FragColor = current;
 					}
 				}
-			} else if (current.g < above.g) { // empty cell
+			} else if (current.g < 0.25) { // empty cell
 				if (vTextureCoord.y + 1.0 / 720.0 >= 1.0) { // ceiling
 					gl_FragColor = current;
 				} else if (above.g > current.g) {
