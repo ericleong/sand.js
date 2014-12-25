@@ -1,34 +1,41 @@
 var canvas;
 var gl;
-var rectTexture;
+
+// textures
+var rectTexture, maskTexture;
 var sandTexture0, sandTexture1;
 
+// frame buffers
 var sandBuffer;
-var rectFrameBuffer;
+var rectFrameBuffer, maskFrameBuffer;
 var sandFrameBuffer0, sandFrameBuffer1;
 
+// vertex/coordinate buffers
 var rectVerticesBuffer;
 var rectVerticesTextureCoordBuffer;
-var copyProgram, advanceProgram;
+
+var copyProgram, advanceProgram, opaqueProgram;
 var vertexPositionAttribute;
 var textureCoordAttribute;
 
 // user input
 var painter;
-var context;
+var mask;
 
 var down = false;
 var color = 'rgba(255, 255, 255, 1.0)';
 
 function initUserInput() {
 	var canvas = document.getElementById('glcanvas');
-	painter = document.createElement('canvas');
-	context = painter.getContext('2d');
-	
+
 	// create a new canvas
-	context.imageSmoothingEnabled = false;
+	painter = document.createElement('canvas');
+	mask = document.createElement('canvas');
 
 	// set dimensions
+	mask.width = canvas.width;
+	mask.height = canvas.height;
+
 	painter.width = canvas.width;
 	painter.height = canvas.height;
 
@@ -40,32 +47,41 @@ function initUserInput() {
 		};
 	}
 
-	function drawCircle(context, canvas, evt) {
-		var mousePos = getMousePos(canvas, evt);
+	function drawCanvas(canvas, mousePos, color, texture) {
+		var context = canvas.getContext('2d');
 
 		context.fillStyle = color;
 		// use a rectangle because circles are antialiased
 		context.fillRect(mousePos.x - 12, mousePos.y - 12, 24, 24);
 
-		gl.bindTexture(gl.TEXTURE_2D, rectTexture);
+		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, painter);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
 
-		context.clearRect(0, 0, painter.width, painter.height);
+		context.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
+	function draw(canvas, evt) {
+		var mousePos = getMousePos(canvas, evt);
+
+		drawCanvas(painter, mousePos, color, rectTexture);
+		drawCanvas(mask, mousePos, 'rgba(255, 255, 255, 1.0)', maskTexture);
 	}
 
 	canvas.addEventListener('mousedown', function(evt) {
 		down = true;
 
 		if (evt.shiftKey) {
-			color = 'rgba(128, 128, 128, 1.0)';
+			color = 'rgba(0, 255, 255, 0.5)';
 		} else if (evt.ctrlKey) {
-			color = 'rgba(0, 0, 0, 1.0)';
+			color = 'rgba(0, 0, 0, 0.0)';
+			// color = 'rgba(255, 255, 255, 0.25)';
 		} else {
 			color = 'rgba(255, 255, 255, 1.0)';
 		}
 
-		drawCircle(context, canvas, evt);
+		draw(canvas, evt);
 	}, true);
 
 	canvas.addEventListener('mouseup', function(evt) {
@@ -74,7 +90,7 @@ function initUserInput() {
 
 	canvas.addEventListener('mousemove', function(evt) {
 		if (down) {
-			drawCircle(context, canvas, evt);
+			draw(canvas, evt);
 		}
 	}, true);
 }
@@ -125,7 +141,7 @@ function initWebGL() {
 	gl = null;
 	
 	try {
-		gl = canvas.getContext('experimental-webgl');
+		gl = canvas.getContext('experimental-webgl', { premultipliedAlpha: false });
 	} catch(e) {
 		console.log(e);
 	}
@@ -207,8 +223,12 @@ function advance() {
 	gl.bindFramebuffer(gl.FRAMEBUFFER, sandBuffer == 0 ? sandFrameBuffer0 : sandFrameBuffer1);
 
 	// Clear the canvas before we start drawing on it.
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, transparent
 	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	// this fixes our problems with alpha
+	// remember, we are not using alpha for transparency
+	gl.blendFunc(gl.ONE, gl.ZERO);
 
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
@@ -255,11 +275,29 @@ function advance() {
 	// Specify the texture to map onto the face.
 	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
 
+	// draw mask
+	gl.blendFuncSeparate(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+
+	// draw user input mask
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, maskTexture);
+
+	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+	// restore blend function
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
 	// draw user input
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, rectTexture);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+	// clear mask
+	gl.bindFramebuffer(gl.FRAMEBUFFER, maskFrameBuffer);
+
+	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
+	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	// clear user input
 	gl.bindFramebuffer(gl.FRAMEBUFFER, rectFrameBuffer);
@@ -271,19 +309,21 @@ function advance() {
 function drawScene() {
 	/* copy framebuffer to screen */
 
-	gl.useProgram(copyProgram);
+	gl.useProgram(opaqueProgram);
 	
-	vertexPositionAttribute = gl.getAttribLocation(copyProgram, 'aVertexPosition');
+	vertexPositionAttribute = gl.getAttribLocation(opaqueProgram, 'aVertexPosition');
 	gl.enableVertexAttribArray(vertexPositionAttribute);
 
-	textureCoordAttribute = gl.getAttribLocation(copyProgram, 'aTextureCoord');
+	textureCoordAttribute = gl.getAttribLocation(opaqueProgram, 'aTextureCoord');
 	gl.enableVertexAttribArray(textureCoordAttribute);
 
 	// draw onto screen
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, fully opaque
 	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
@@ -296,7 +336,7 @@ function drawScene() {
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
 	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 
-	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
+	gl.uniform1i(gl.getUniformLocation(opaqueProgram, 'uSampler'), 0);
 
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture0 : sandTexture1);
@@ -312,8 +352,8 @@ function drawScene() {
 // Initialize the shaders, so WebGL knows how to light our scene.
 //
 function initShaders() {
-
 	copyProgram = createProgram('shader-vs-copy', 'shader-fs-copy');
+	opaqueProgram = createProgram('shader-vs-copy', 'shader-fs-copy-opaque');
 	advanceProgram = createProgram('shader-vs-advance', 'shader-fs-advance');
 }
 
@@ -401,13 +441,14 @@ function getShader(gl, id) {
 function initTextures() {
 	rectImage = new Image();
 	rectImage.onload = function() { handleTextureLoaded(rectImage); }
-	rectImage.src = './sand.png';
+	rectImage.src = './sand2.png';
 }
 
 function initTexture(image) {
 	var texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -422,6 +463,17 @@ function initTexture(image) {
 }
 
 function handleTextureLoaded(image) {
+	var canvas = document.createElement('canvas');
+
+	canvas.width = image.width;
+	canvas.height = image.height;
+
+	var context = canvas.getContext('2d');
+
+	// context.fillStyle = 'rgba(128, 128, 128, 0.5)';
+	// context.fillRect(0, 0, canvas.width, canvas.height);
+	// context.drawImage(image, 0, 0);
+
 	var tex = initTexture(image);
 	rectTexture = tex[0];
 	rectFrameBuffer = tex[1];
@@ -433,6 +485,15 @@ function handleTextureLoaded(image) {
 	tex = initTexture(image);
 	sandTexture1 = tex[0];
 	sandFrameBuffer1 = tex[1];
+
+	// context.fillStyle = 'rgba(255, 255, 255, 1.0)';
+	context.fillStyle = 'rgba(0, 0, 0, 0.0)';
+	context.fillRect(0, 0, canvas.width, canvas.height);
+	
+	// create mask
+	tex = initTexture(canvas);
+	maskTexture = tex[0];
+	maskFrameBuffer = tex[1];
 
 	gl.bindTexture(gl.TEXTURE_2D, null);
 
