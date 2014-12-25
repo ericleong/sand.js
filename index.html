@@ -19,17 +19,6 @@
 		}
 	</script>
 
-	<script id="shader-fs-copy-opaque" type="x-shader/x-fragment">
-		varying highp vec2 vTextureCoord;
-
-		uniform sampler2D uSampler;
-
-		void main(void) {
-			mediump vec4 color = texture2D(uSampler, vTextureCoord);
-			gl_FragColor = vec4(color.r, color.g, color.b, 1.0);
-		}
-	</script>
-
 	<script id="shader-vs-copy" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec2 aTextureCoord;

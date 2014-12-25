@@ -14,7 +14,7 @@ var sandFrameBuffer0, sandFrameBuffer1;
 var rectVerticesBuffer;
 var rectVerticesTextureCoordBuffer;
 
-var copyProgram, advanceProgram, opaqueProgram;
+var copyProgram, advanceProgram;
 var vertexPositionAttribute;
 var textureCoordAttribute;
 
@@ -310,21 +310,22 @@ function advance() {
 function drawScene() {
 	/* copy framebuffer to screen */
 
-	gl.useProgram(opaqueProgram);
+	gl.useProgram(copyProgram);
 	
-	vertexPositionAttribute = gl.getAttribLocation(opaqueProgram, 'aVertexPosition');
+	vertexPositionAttribute = gl.getAttribLocation(copyProgram, 'aVertexPosition');
 	gl.enableVertexAttribArray(vertexPositionAttribute);
 
-	textureCoordAttribute = gl.getAttribLocation(opaqueProgram, 'aTextureCoord');
+	textureCoordAttribute = gl.getAttribLocation(copyProgram, 'aTextureCoord');
 	gl.enableVertexAttribArray(textureCoordAttribute);
 
 	// draw onto screen
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, fully opaque
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	gl.blendFunc(gl.ONE, gl.ZERO);
+	gl.colorMask(true, true, true, false);
 
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
@@ -337,12 +338,15 @@ function drawScene() {
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
 	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
 
-	gl.uniform1i(gl.getUniformLocation(opaqueProgram, 'uSampler'), 0);
+	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
 
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture0 : sandTexture1);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+	// restore color mask
+	gl.colorMask(true, true, true, true);
 
 	window.requestAnimationFrame(drawScene);
 }
@@ -354,7 +358,6 @@ function drawScene() {
 //
 function initShaders() {
 	copyProgram = createProgram('shader-vs-copy', 'shader-fs-copy');
-	opaqueProgram = createProgram('shader-vs-copy', 'shader-fs-copy-opaque');
 	advanceProgram = createProgram('shader-vs-advance', 'shader-fs-advance');
 }
 
