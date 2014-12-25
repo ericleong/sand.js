@@ -26,8 +26,6 @@ var down = false;
 var color = 'rgba(255, 255, 255, 1.0)';
 
 function initUserInput() {
-	var canvas = document.getElementById('glcanvas');
-
 	// create a new canvas
 	painter = document.createElement('canvas');
 	mask = document.createElement('canvas');
