@@ -18,17 +18,15 @@ var copyProgram, advanceProgram;
 var vertexPositionAttribute;
 var textureCoordAttribute;
 
-// user input
-var painter;
-var mask;
-
-var down = false;
-var color = 'rgba(255, 255, 255, 1.0)';
+var updateInput = false;
 
 function initUserInput() {
+	var down = false;
+	var color = 'rgba(255, 255, 255, 1.0)';
+
 	// create a new canvas
-	painter = document.createElement('canvas');
-	mask = document.createElement('canvas');
+	var painter = document.createElement('canvas');
+	var mask = document.createElement('canvas');
 
 	// set dimensions
 	mask.width = canvas.width;
@@ -58,6 +56,7 @@ function initUserInput() {
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	function draw(canvas, evt) {
@@ -65,6 +64,8 @@ function initUserInput() {
 
 		drawCanvas(painter, mousePos, color, rectTexture);
 		drawCanvas(mask, mousePos, 'rgba(255, 255, 255, 1.0)', maskTexture);
+
+		updateInput = true;
 	}
 
 	canvas.addEventListener('mousedown', function(evt) {
@@ -200,56 +201,7 @@ function initBuffers() {
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 }
 
-//
-// advance
-//
-// Advance the scene.
-//
-function advance() {
-	sandBuffer = sandBuffer == 0 ? 1 : 0;
-
-	/* advance */
-
-	gl.useProgram(advanceProgram);
-	
-	vertexPositionAttribute = gl.getAttribLocation(advanceProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(vertexPositionAttribute);
-
-	textureCoordAttribute = gl.getAttribLocation(advanceProgram, 'aTextureCoord');
-	gl.enableVertexAttribArray(textureCoordAttribute);
-
-	// draw onto framebuffer
-	gl.bindFramebuffer(gl.FRAMEBUFFER, sandBuffer == 0 ? sandFrameBuffer0 : sandFrameBuffer1);
-
-	// Clear the canvas before we start drawing on it.
-	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, transparent
-	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	// this fixes our problems with alpha
-	// remember, we are not using alpha for transparency
-	gl.blendFunc(gl.ONE, gl.ZERO);
-
-	// Draw the rect by binding the array buffer to the rect's vertices
-	// array, setting attributes, and pushing it to GL.
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
-	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-
-	// Set the texture coordinates attribute for the vertices.
-	
-	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-	
-	// Specify the texture to map onto the face.
-	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uSampler'), 0);
-	
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture1 : sandTexture0);
-	
-	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uBias'), sandBuffer);
-
-	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
+function drawInput() {
 	/* add user input */
 
 	gl.useProgram(copyProgram);
@@ -303,6 +255,65 @@ function advance() {
 
 	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
 	gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
+//
+// advance
+//
+// Advance the scene.
+//
+function advance() {
+	sandBuffer = sandBuffer == 0 ? 1 : 0;
+
+	/* advance */
+
+	gl.useProgram(advanceProgram);
+	
+	vertexPositionAttribute = gl.getAttribLocation(advanceProgram, 'aVertexPosition');
+	gl.enableVertexAttribArray(vertexPositionAttribute);
+
+	textureCoordAttribute = gl.getAttribLocation(advanceProgram, 'aTextureCoord');
+	gl.enableVertexAttribArray(textureCoordAttribute);
+
+	// draw onto framebuffer
+	gl.bindFramebuffer(gl.FRAMEBUFFER, sandBuffer == 0 ? sandFrameBuffer0 : sandFrameBuffer1);
+
+	// Clear the canvas before we start drawing on it.
+	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, transparent
+	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	// this fixes our problems with alpha
+	// remember, we are not using alpha for transparency
+	gl.blendFunc(gl.ONE, gl.ZERO);
+
+	// Draw the rect by binding the array buffer to the rect's vertices
+	// array, setting attributes, and pushing it to GL.
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
+	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+	// Set the texture coordinates attribute for the vertices.
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
+	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+	
+	// Specify the texture to map onto the face.
+	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uSampler'), 0);
+	
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture1 : sandTexture0);
+	
+	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uBias'), sandBuffer);
+
+	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+function engine() {
+	advance();
+
+	if (updateInput) {
+		drawInput();
+	}
 }
 
 function drawScene() {
@@ -472,6 +483,7 @@ function handleTextureLoaded(image) {
 
 	var context = canvas.getContext('2d');
 
+	// 'empty' has a density of 0.5
 	context.fillStyle = 'rgba(0, 0, 0, 0.50)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(image, 0, 0);
@@ -480,6 +492,7 @@ function handleTextureLoaded(image) {
 	rectTexture = tex[0];
 	rectFrameBuffer = tex[1];
 
+	// keep buffers empty
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	
 	tex = initTexture(canvas);
@@ -490,17 +503,20 @@ function handleTextureLoaded(image) {
 	sandTexture1 = tex[0];
 	sandFrameBuffer1 = tex[1];
 
+	// create mask, draw the entire image
 	context.fillStyle = 'rgba(255, 255, 255, 1.0)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
-	
-	// create mask
+
 	tex = initTexture(canvas);
 	maskTexture = tex[0];
 	maskFrameBuffer = tex[1];
 
 	gl.bindTexture(gl.TEXTURE_2D, null);
 
-	setInterval(advance, 8);
+	// tell the engine to update the buffers with input
+	updateInput = true;
+
+	setInterval(engine, 8);
 
 	// Set up to draw the scene periodically.
 	window.requestAnimationFrame(drawScene);
