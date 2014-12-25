@@ -56,6 +56,16 @@
 
 		uniform int uBias;
 
+		mediump vec4 swap(in mediump vec4 current, in mediump vec4 other) {
+			if (current.a > 0.49 && current.a < 0.51 && current.r < 0.25 && current.g > 0.75) {
+				return current;
+			} else if (other.a > 0.49 && other.a < 0.51 && other.r < 0.25 && other.g > 0.75) {
+				return current;
+			} else {
+				return other;
+			}
+		}
+
 		void main(void) {
 			mediump vec4 above = texture2D(uSampler, vTextureCoordAbove);
 			mediump vec4 aboveleft = texture2D(uSampler, vTextureCoordAboveLeft);
@@ -74,25 +84,25 @@
 			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoordBelowRightRight);
 
 			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a) { // fall to below
-				gl_FragColor = below;
+				gl_FragColor = swap(current, below);
 			} else if (vTextureCoordBelow.y >= 0.0 && uBias == 0 && belowleft.a < current.a && left.a <= belowleft.a) { // left bias
-				gl_FragColor = belowleft;
+				gl_FragColor = swap(current, belowleft);
 			} else if (vTextureCoordBelow.y >= 0.0 && uBias == 0 && belowright.a < current.a && right.a < belowright.a && (rightright.a <= belowright.a || belowrightright.a <= rightright.a)) {
-				gl_FragColor = belowright;
+				gl_FragColor = swap(current, belowright);
 			} else if (vTextureCoordBelow.y >= 0.0 && uBias != 0 && belowright.a < current.a && right.a <= belowright.a) { // right bias
-				gl_FragColor = belowright;
+				gl_FragColor = swap(current, belowright);
 			} else if (vTextureCoordBelow.y >= 0.0 && uBias != 0 && belowleft.a < current.a && left.a < belowleft.a && (leftleft.a <= belowleft.a || belowleftleft.a <= leftleft.a)) {
-				gl_FragColor = belowleft;
+				gl_FragColor = swap(current, belowleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && above.a > current.a) { // take from above
-				gl_FragColor = above;
+				gl_FragColor = swap(current, above);
 			} else if (vTextureCoordAbove.y <= 1.0 && uBias == 0 && aboveright.a > current.a && right.a >= aboveright.a) { // left bias
-				gl_FragColor = aboveright;
+				gl_FragColor = swap(current, aboveright);
 			} else if (vTextureCoordAbove.y <= 1.0 && uBias == 0 && aboveleft.a > current.a && left.a > aboveleft.a && (leftleft.a >= aboveleft.a || aboveleftleft.a >= leftleft.a) && vTextureCoord.x >= 0.0) {
-				gl_FragColor = aboveleft;
+				gl_FragColor = swap(current, aboveleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && uBias != 0 && aboveleft.a > current.a && left.a >= aboveleft.a) { // right bias
-				gl_FragColor = aboveleft;
+				gl_FragColor = swap(current, aboveleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && uBias != 0 && aboveright.a > current.a && right.a > aboveright.a && (rightright.a >= aboveleft.a || aboverightright.a >= rightright.a) && vTextureCoord.x <= 1.0) {
-				gl_FragColor = aboveright;
+				gl_FragColor = swap(current, aboveright);
 			} else {
 				gl_FragColor = current;
 			}
