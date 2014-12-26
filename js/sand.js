@@ -4,6 +4,7 @@ var gl;
 // textures
 var rectTexture, maskTexture;
 var sandTexture0, sandTexture1;
+var cellsTexture, rulesTexture;
 
 // frame buffers
 var sandBuffer;
@@ -20,7 +21,7 @@ var aAdvanceTextureCoord;
 
 // uniform locations
 var uCopySampler;
-var uAdvanceSampler;
+var uAdvanceSampler, uAdvanceCells, uAdvanceRules;
 var uBias;
 
 // vertex attrib locations
@@ -116,13 +117,13 @@ function initUserInput() {
 
 		down = true;
 
-		if (evt.shiftKey) {
-			color = 'rgba(0, 255, 255, 0.5)';
-		} else if (evt.ctrlKey) {
+		if (evt.shiftKey) { // wall
+			color = 'rgba(127, 127, 127, 0.5)';
+		} else if (evt.ctrlKey) { // empty
 			color = 'rgba(0, 0, 0, 0.5)';
-		} else if (evt.altKey) {
-			color = 'rgba(255, 255, 0, 0.25)';
-		} else {
+		} else if (evt.altKey) { // fire
+			color = 'rgba(255, 0, 0, 0.1)';
+		} else { // sand
 			color = 'rgba(255, 255, 255, 1.0)';
 		}
 
@@ -148,11 +149,11 @@ function initUserInput() {
 	canvas.addEventListener('mouseleave', handleEnd, true);
 	canvas.addEventListener('mousemove', handleMove, true);
 
-	el.addEventListener("touchstart", handleStart, true);
-	el.addEventListener("touchend", handleEnd, true);
-	el.addEventListener("touchcancel", handleEnd, true);
-	el.addEventListener("touchleave", handleEnd, true);
-	el.addEventListener("touchmove", handleMove, true);
+	canvas.addEventListener("touchstart", handleStart, true);
+	canvas.addEventListener("touchend", handleEnd, true);
+	canvas.addEventListener("touchcancel", handleEnd, true);
+	canvas.addEventListener("touchleave", handleEnd, true);
+	canvas.addEventListener("touchmove", handleMove, true);
 }
 
 //
@@ -315,6 +316,18 @@ function advance() {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture1 : sandTexture0);
 	
+	// Pass cells texture
+	gl.uniform1i(uAdvanceCells, 1);
+	
+	gl.activeTexture(gl.TEXTURE1);
+	gl.bindTexture(gl.TEXTURE_2D, cellsTexture);
+	
+	// Pass cells texture
+	gl.uniform1i(uAdvanceRules, 2);
+	
+	gl.activeTexture(gl.TEXTURE2);
+	gl.bindTexture(gl.TEXTURE_2D, rulesTexture);
+	
 	gl.uniform1i(uBias, sandBuffer);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -378,6 +391,8 @@ function initShaders() {
 	// uniforms
 	uCopySampler = gl.getUniformLocation(copyProgram, 'uSampler');
 	uAdvanceSampler = gl.getUniformLocation(advanceProgram, 'uSampler');
+	uAdvanceCells = gl.getUniformLocation(advanceProgram, 'uCells');
+	uAdvanceRules = gl.getUniformLocation(advanceProgram, 'uRules');
 	uBias = gl.getUniformLocation(advanceProgram, 'uBias');
 
 	// vertex attributes
@@ -481,16 +496,24 @@ function initTextures() {
 	rectImage.src = './sand.png';
 }
 
-function initTexture(image) {
+function initTexture(image, flip) {
+	flip = flip === undefined ? true : flip;
+
 	var texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
 	gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+	return texture;
+}
+
+function initTextureWithFrameBuffer(image) {
+	var texture = initTexture(image);
 
 	var framebuffer = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -508,22 +531,22 @@ function handleTextureLoaded(image) {
 	var context = canvas.getContext('2d');
 
 	// 'empty' has a density of 0.5
-	context.fillStyle = 'rgba(0, 0, 0, 0.50)';
+	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(image, 0, 0);
 
-	var tex = initTexture(canvas);
+	var tex = initTextureWithFrameBuffer(canvas);
 	rectTexture = tex[0];
 	rectFrameBuffer = tex[1];
 
 	// keep buffers empty
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	
-	tex = initTexture(canvas);
+	tex = initTextureWithFrameBuffer(canvas);
 	sandTexture0 = tex[0];
 	sandFrameBuffer0 = tex[1];
 	
-	tex = initTexture(canvas);
+	tex = initTextureWithFrameBuffer(canvas);
 	sandTexture1 = tex[0];
 	sandFrameBuffer1 = tex[1];
 
@@ -531,9 +554,16 @@ function handleTextureLoaded(image) {
 	context.fillStyle = 'rgba(255, 255, 255, 1.0)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 
-	tex = initTexture(canvas);
+	tex = initTextureWithFrameBuffer(canvas);
 	maskTexture = tex[0];
 	maskFrameBuffer = tex[1];
+
+	// load config
+	var generator = new lutGenerator();
+	generator.parse(document.getElementById('config').textContent);
+
+	cellsTexture = initTexture(generator.cellsData, false);
+	rulesTexture = initTexture(generator.rulesData, false);
 
 	gl.bindTexture(gl.TEXTURE_2D, null);
 

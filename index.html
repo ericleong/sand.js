@@ -7,6 +7,7 @@
 
 	<title>sand.js</title>
 
+	<script src="js/lutGenerator.js"></script>
 	<script src="js/sand.js"></script>
 
 	<script id="shader-fs-copy" type="x-shader/x-fragment">
@@ -53,17 +54,27 @@
 		varying highp vec2 vTextureCoordBelowRightRight;
 
 		uniform sampler2D uSampler;
+		uniform sampler2D uCells;
+		uniform sampler2D uRules;
 
 		uniform int uBias;
 
+		mediump vec4 cellIndex(in mediump vec4 color) {
+			mediump float blueScaled = color.b * 63.0; // out of 64
+
+			mediump vec2 tile;
+			tile.y = floor(floor(blueScaled) / 8.0);
+			tile.x = floor(blueScaled) - (tile.y * 8.0);
+
+			mediump vec2 cellPos;
+			cellPos.x = (tile.x * 0.125) + 0.5 / 512.0 + (color.r * (0.125 - 1.0 / 512.0));
+			cellPos.y = (tile.y * 0.125) + 0.5 / 512.0 + (color.g * (0.125 - 1.0 / 512.0));
+
+			return texture2D(uCells, cellPos);
+		}
+
 		mediump vec4 swap(in mediump vec4 current, in mediump vec4 other) {
-			if (current.a > 0.49 && current.a < 0.51 && current.r < 0.25 && current.g > 0.75) {
-				return current;
-			} else if (other.a > 0.49 && other.a < 0.51 && other.r < 0.25 && other.g > 0.75) {
-				return current;
-			} else {
-				return other;
-			}
+			return texture2D(uRules, vec2(cellIndex(current).r, cellIndex(other).r));
 		}
 
 		void main(void) {
@@ -158,5 +169,14 @@
 
 <body onload="start()">
 	<canvas id="glcanvas" width="1280" height="720">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
-</body>
-</html>
+	<p id="config">cell empty 0 0 0 0.5
+cell sand 255 255 255 1.0
+cell wall 127 127 127 0.5
+cell fire 255 0 0 0.1
+rule empty sand sand empty
+rule wall empty wall empty
+rule wall sand wall sand
+rule wall fire wall fire
+rule empty fire empty empty
+rule fire sand fire fire</p>
+</body>>
