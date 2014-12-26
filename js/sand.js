@@ -15,10 +15,53 @@ var rectVerticesBuffer;
 var rectVerticesTextureCoordBuffer;
 
 var copyProgram, advanceProgram;
-var vertexPositionAttribute;
-var textureCoordAttribute;
+var aAdvanceVertexPosition;
+var aAdvanceTextureCoord;
 
+// uniform locations
+var uCopySampler;
+var uAdvanceSampler;
+var uBias;
+
+// vertex attrib locations
+var aCopyVertexPosition;
+var aCopyTextureCoord;
+
+// draw input hint
 var updateInput = false;
+
+//
+// start
+//
+function start() {
+	canvas = document.getElementById('glcanvas');
+
+	initWebGL(canvas);      // Initialize the GL context
+	
+	// Only continue if WebGL is available and working
+	
+	if (gl) {
+		gl.enable(gl.BLEND);
+		gl.disable(gl.DEPTH_TEST);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		
+		// Initialize the shaders; this is where all the lighting for the
+		// vertices and so forth is established.
+		
+		initShaders();
+		
+		// Here's where we call the routine that builds all the objects
+		// we'll be drawing.
+		
+		initBuffers();
+
+		// Next, load and set up the textures we'll be using.
+
+		initTextures();
+
+		initUserInput();
+	}
+}
 
 function initUserInput() {
 	var down = false;
@@ -96,39 +139,6 @@ function initUserInput() {
 }
 
 //
-// start
-//
-function start() {
-	canvas = document.getElementById('glcanvas');
-
-	initWebGL(canvas);      // Initialize the GL context
-	
-	// Only continue if WebGL is available and working
-	
-	if (gl) {
-		gl.enable(gl.BLEND);
-		gl.disable(gl.DEPTH_TEST);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		
-		// Initialize the shaders; this is where all the lighting for the
-		// vertices and so forth is established.
-		
-		initShaders();
-		
-		// Here's where we call the routine that builds all the objects
-		// we'll be drawing.
-		
-		initBuffers();
-
-		// Next, load and set up the textures we'll be using.
-
-		initTextures();
-
-		initUserInput();
-	}
-}
-
-//
 // initWebGL
 //
 // Initialize WebGL, returning the GL context or null if
@@ -203,25 +213,19 @@ function drawInput() {
 
 	gl.useProgram(copyProgram);
 	
-	vertexPositionAttribute = gl.getAttribLocation(copyProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(vertexPositionAttribute);
-
-	textureCoordAttribute = gl.getAttribLocation(copyProgram, 'aTextureCoord');
-	gl.enableVertexAttribArray(textureCoordAttribute);
-
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
-	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(aCopyVertexPosition, 3, gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(aCopyTextureCoord, 2, gl.FLOAT, false, 0, 0);
 
 	// Specify the texture to map onto the face.
-	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
+	gl.uniform1i(uCopySampler, 0);
 
 	// draw mask
 	gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
@@ -266,12 +270,6 @@ function advance() {
 
 	gl.useProgram(advanceProgram);
 	
-	vertexPositionAttribute = gl.getAttribLocation(advanceProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(vertexPositionAttribute);
-
-	textureCoordAttribute = gl.getAttribLocation(advanceProgram, 'aTextureCoord');
-	gl.enableVertexAttribArray(textureCoordAttribute);
-
 	// draw onto framebuffer
 	gl.bindFramebuffer(gl.FRAMEBUFFER, sandBuffer == 0 ? sandFrameBuffer0 : sandFrameBuffer1);
 
@@ -287,20 +285,20 @@ function advance() {
 	// array, setting attributes, and pushing it to GL.
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
-	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(aAdvanceVertexPosition, 3, gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(aAdvanceTextureCoord, 2, gl.FLOAT, false, 0, 0);
 	
 	// Specify the texture to map onto the face.
-	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uSampler'), 0);
+	gl.uniform1i(uAdvanceSampler, 0);
 	
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture1 : sandTexture0);
 	
-	gl.uniform1i(gl.getUniformLocation(advanceProgram, 'uBias'), sandBuffer);
+	gl.uniform1i(uBias, sandBuffer);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
@@ -317,12 +315,6 @@ function drawScene() {
 	/* copy framebuffer to screen */
 
 	gl.useProgram(copyProgram);
-	
-	vertexPositionAttribute = gl.getAttribLocation(copyProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(vertexPositionAttribute);
-
-	textureCoordAttribute = gl.getAttribLocation(copyProgram, 'aTextureCoord');
-	gl.enableVertexAttribArray(textureCoordAttribute);
 
 	// draw onto screen
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -337,14 +329,14 @@ function drawScene() {
 	// array, setting attributes, and pushing it to GL.
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
-	gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(aCopyVertexPosition, 3, gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
 	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(aCopyTextureCoord, 2, gl.FLOAT, false, 0, 0);
 
-	gl.uniform1i(gl.getUniformLocation(copyProgram, 'uSampler'), 0);
+	gl.uniform1i(uCopySampler, 0);
 
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture0 : sandTexture1);
@@ -365,6 +357,24 @@ function drawScene() {
 function initShaders() {
 	copyProgram = createProgram('shader-vs-copy', 'shader-fs-copy');
 	advanceProgram = createProgram('shader-vs-advance', 'shader-fs-advance');
+
+	// uniforms
+	uCopySampler = gl.getUniformLocation(copyProgram, 'uSampler');
+	uAdvanceSampler = gl.getUniformLocation(advanceProgram, 'uSampler');
+	uBias = gl.getUniformLocation(advanceProgram, 'uBias');
+
+	// vertex attributes
+	aCopyVertexPosition = gl.getAttribLocation(copyProgram, 'aVertexPosition');
+	gl.enableVertexAttribArray(aCopyVertexPosition);
+
+	aCopyTextureCoord = gl.getAttribLocation(copyProgram, 'aTextureCoord');
+	gl.enableVertexAttribArray(aCopyTextureCoord);
+
+	aAdvanceVertexPosition = gl.getAttribLocation(advanceProgram, 'aVertexPosition');
+	gl.enableVertexAttribArray(aAdvanceVertexPosition);
+
+	aAdvanceTextureCoord = gl.getAttribLocation(advanceProgram, 'aTextureCoord');
+	gl.enableVertexAttribArray(aAdvanceTextureCoord);
 }
 
 function createProgram(vertexShaderId, fragmentShaderId) {
@@ -513,7 +523,7 @@ function handleTextureLoaded(image) {
 	// tell the engine to update the buffers with input
 	updateInput = true;
 
-	setInterval(engine, 8);
+	setInterval(engine, 2);
 
 	// Set up to draw the scene periodically.
 	window.requestAnimationFrame(drawScene);
