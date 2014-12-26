@@ -523,7 +523,7 @@ function handleTextureLoaded(image) {
 	// tell the engine to update the buffers with input
 	updateInput = true;
 
-	setInterval(engine, 2);
+	setInterval(engine, 8);
 
 	// Set up to draw the scene periodically.
 	window.requestAnimationFrame(drawScene);
