@@ -98,9 +98,6 @@ function initUserInput() {
 //
 // start
 //
-// Called when the canvas is created to get the ball rolling.
-// Figuratively, that is. There's nothing moving in this demo.
-//
 function start() {
 	canvas = document.getElementById('glcanvas');
 

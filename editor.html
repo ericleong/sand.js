@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>sand.js editor</title>
+
+	<script src="js/lutGenerator.js"></script>
+	<script src="js/editor.js"></script>
+</head>
+<body onload="start()">
+	<canvas id="cells" width="512" height="512">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
+	<canvas id="rules" width="256" height="256">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
+	<textarea id="config" rows="20" cols="40">cell empty 0 0 0 0.5
+cell sand 255 255 255 1.0
+cell wall 127 127 127 0.5
+cell fire 255 0 0 0.1
+rule empty sand sand empty
+rule wall empty wall empty
+rule wall sand wall sand
+rule wall fire wall fire
+rule empty fire fire empty
+rule fire sand empty fire</textarea>
+	<button id="update">update</button>
+	<div>
+		<a id="download-cells">download cells</a>
+		<a id="download-rules">download rules</a>
+		<a id="download-config">download config</a>
+	</div>
+</body>
+</html>
