@@ -111,7 +111,9 @@ function initUserInput() {
 		updateInput = true;
 	}
 
-	canvas.addEventListener('mousedown', function(evt) {
+	function handleStart(evt) {
+		evt.preventDefault();
+
 		down = true;
 
 		if (evt.shiftKey) {
@@ -125,17 +127,32 @@ function initUserInput() {
 		}
 
 		draw(canvas, evt);
-	}, true);
+	}
 
-	canvas.addEventListener('mouseup', function(evt) {
+	function handleEnd(evt) {
+		evt.preventDefault();
+
 		down = false;
-	}, true);
+	}
 
-	canvas.addEventListener('mousemove', function(evt) {
+	function handleMove(evt) {
+		evt.preventDefault();
+
 		if (down) {
 			draw(canvas, evt);
 		}
-	}, true);
+	}
+
+	canvas.addEventListener('mousedown', handleStart, true);
+	canvas.addEventListener('mouseup', handleEnd, true);
+	canvas.addEventListener('mouseleave', handleEnd, true);
+	canvas.addEventListener('mousemove', handleMove, true);
+
+	el.addEventListener("touchstart", handleStart, true);
+	el.addEventListener("touchend", handleEnd, true);
+	el.addEventListener("touchcancel", handleEnd, true);
+	el.addEventListener("touchleave", handleEnd, true);
+	el.addEventListener("touchmove", handleMove, true);
 }
 
 //
