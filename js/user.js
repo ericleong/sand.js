@@ -138,6 +138,8 @@ function initUserInput(canvas) {
 	function getCurrentColor() {
 		var color = 'rgba(255, 255, 255, 1.0)';
 
+		console.log(radios);
+
 		for (var i = 0; i < radios.length; i++) {
 			if (radios[i].checked) {
 				var cell = sand.config.cells[radios[i].value];
@@ -229,6 +231,8 @@ function initUserInput(canvas) {
 			var touch = copyTouch(evt.changedTouches[i]);
 
 			ongoingTouches.push(touch);
+
+			color = getCurrentColor();
 			drawEvent(canvas, touch);
 		}
 	}
