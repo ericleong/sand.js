@@ -1,6 +1,6 @@
 var SandUtils = {};
 
-SandUtils.createProgram = function(vertexShaderId, fragmentShaderId) {
+SandUtils.createProgram = function(gl, vertexShaderId, fragmentShaderId) {
 
 	var vertexShader = SandUtils.getShader(gl, vertexShaderId);
 	var fragmentShader = SandUtils.getShader(gl, fragmentShaderId);
@@ -81,7 +81,7 @@ SandUtils.getShader = function(gl, id) {
 	return shader;
 }
 
-SandUtils.initTexture = function(image, flip) {
+SandUtils.initTexture = function(gl, image, flip) {
 	flip = flip === undefined ? true : flip;
 
 	var texture = gl.createTexture();
@@ -97,8 +97,8 @@ SandUtils.initTexture = function(image, flip) {
 	return texture;
 }
 
-SandUtils.initTextureWithFrameBuffer = function(image) {
-	var texture = SandUtils.initTexture(image);
+SandUtils.initTextureWithFrameBuffer = function(gl, image) {
+	var texture = this.initTexture(gl, image);
 
 	var framebuffer = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);

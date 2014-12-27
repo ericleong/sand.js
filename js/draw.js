@@ -1,7 +1,7 @@
-var draw = function(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer) {
+var Draw = function(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer) {
 	if (gl) {
 		this.gl = gl;
-		
+
 		// Initialize the shaders; this is where all the lighting for the
 		// vertices and so forth is established.
 		
@@ -17,8 +17,8 @@ var draw = function(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer) {
 //
 // Initialize the shaders, so WebGL knows how to light our scene.
 //
-draw.prototype.initShaders = function() {
-	this.program = SandUtils.createProgram('shader-vs-copy', 'shader-fs-copy');
+Draw.prototype.initShaders = function() {
+	this.program = SandUtils.createProgram(this.gl, 'shader-vs-draw', 'shader-fs-draw');
 
 	// uniforms
 	this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
@@ -31,7 +31,7 @@ draw.prototype.initShaders = function() {
 	this.gl.enableVertexAttribArray(this.aTextureCoord);
 }
 
-draw.prototype.drawScene = function(texture) {
+Draw.prototype.drawScene = function(texture) {
 	/* copy framebuffer to screen */
 
 	this.gl.useProgram(this.program);

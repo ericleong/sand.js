@@ -7,16 +7,17 @@ var rectFrameBuffer, maskFrameBuffer;
 // draw input hint
 var updateInput = false;
 
-var drawer;
+var draw;
+var sand;
 
 function start() {
 	var canvas = document.getElementById('glcanvas');
 	var config = document.getElementById('config').textContent;
 
-	init(canvas, config);
+	sand = new Sand(canvas, config);
 
-	if (gl) {
-		drawer = new draw(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer);
+	if (sand.gl) {
+		draw = new Draw(sand.gl, sand.rectVerticesBuffer, sand.rectVerticesTextureCoordBuffer);
 
 		var rectImage = new Image();
 		rectImage.onload = function() { handleTextureLoaded(rectImage); }
@@ -39,7 +40,7 @@ function handleTextureLoaded(image) {
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(image, 0, 0);
 
-	var tex = SandUtils.initTextureWithFrameBuffer(canvas);
+	var tex = SandUtils.initTextureWithFrameBuffer(sand.gl, canvas);
 	rectTexture = tex[0];
 	rectFrameBuffer = tex[1];
 
@@ -47,11 +48,11 @@ function handleTextureLoaded(image) {
 	context.fillStyle = 'rgba(255, 255, 255, 1.0)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 
-	tex = SandUtils.initTextureWithFrameBuffer(canvas);
+	tex = SandUtils.initTextureWithFrameBuffer(sand.gl, canvas);
 	maskTexture = tex[0];
 	maskFrameBuffer = tex[1];
 
-	gl.bindTexture(gl.TEXTURE_2D, null);
+	draw.gl.bindTexture(draw.gl.TEXTURE_2D, null);
 
 	// tell the engine to update the buffers with input
 	updateInput = true;
@@ -63,7 +64,7 @@ function handleTextureLoaded(image) {
 }
 
 function animate() {
-	drawer.drawScene(sandBuffer == 0 ? sandTexture0 : sandTexture1);
+	draw.drawScene(sand.sandBuffer == 0 ? sand.sandTexture0 : sand.sandTexture1);
 
 	window.requestAnimationFrame(animate);
 }
@@ -100,11 +101,11 @@ function initUserInput(canvas) {
 		// use a rectangle because circles are antialiased
 		context.fillRect(mousePos.x - 12, mousePos.y - 12, 24, 24);
 
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
-		gl.bindTexture(gl.TEXTURE_2D, null);
+		draw.gl.bindTexture(draw.gl.TEXTURE_2D, texture);
+		draw.gl.pixelStorei(draw.gl.UNPACK_FLIP_Y_WEBGL, true);
+		draw.gl.pixelStorei(draw.gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+		draw.gl.texImage2D(draw.gl.TEXTURE_2D, 0, draw.gl.RGBA, draw.gl.RGBA, draw.gl.UNSIGNED_BYTE, canvas);
+		draw.gl.bindTexture(draw.gl.TEXTURE_2D, null);
 	}
 
 	function drawEvent(canvas, evt) {
@@ -160,24 +161,24 @@ function initUserInput(canvas) {
 	canvas.addEventListener("touchmove", handleMove, true);
 }
 
-function drawInput() {
+function drawInput(gl) {
 	/* add user input */
 
-	gl.useProgram(drawer.program);
+	gl.useProgram(draw.program);
 	
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, drawer.rectVerticesBuffer);
-	gl.vertexAttribPointer(drawer.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, draw.rectVerticesBuffer);
+	gl.vertexAttribPointer(draw.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
-	gl.bindBuffer(gl.ARRAY_BUFFER, drawer.rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(drawer.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, draw.rectVerticesTextureCoordBuffer);
+	gl.vertexAttribPointer(draw.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
 
 	// Specify the texture to map onto the face.
-	gl.uniform1i(drawer.uSampler, 0);
+	gl.uniform1i(draw.uSampler, 0);
 
 	// draw mask
 	gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
@@ -211,9 +212,9 @@ function drawInput() {
 }
 
 function engine() {
-	advance();
+	sand.next();
 
 	if (updateInput) {
-		drawInput();
+		drawInput(draw.gl);
 	}
 }

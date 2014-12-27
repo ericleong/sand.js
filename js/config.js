@@ -1,4 +1,4 @@
-var lutGenerator = function(cellsCanvas, rulesCanvas) {
+var Config = function(cellsCanvas, rulesCanvas) {
 	if (cellsCanvas === undefined) {
 		this.cellsCanvas = document.createElement('canvas');
 		this.cellsCanvas.width = 512;
@@ -18,7 +18,7 @@ var lutGenerator = function(cellsCanvas, rulesCanvas) {
 	this.reset();
 };
 
-lutGenerator.prototype.reset = function() {
+Config.prototype.reset = function() {
 	this.cells = {};
 	this.numCells = 0;
 
@@ -32,7 +32,7 @@ lutGenerator.prototype.reset = function() {
 	this.rulesData = rulesContext.createImageData(this.rulesCanvas.width, this.rulesCanvas.height);
 };
 
-lutGenerator.prototype.setPixelRGBA = function(imageData, width, x, y, r, g, b, a) {
+Config.prototype.setPixelRGBA = function(imageData, width, x, y, r, g, b, a) {
 	var pos = (y * width + x) * 4;
 	var data = imageData.data;
 	data[pos] = r;
@@ -41,11 +41,11 @@ lutGenerator.prototype.setPixelRGBA = function(imageData, width, x, y, r, g, b, 
 	data[pos + 3] = a;
 };
 
-lutGenerator.prototype.setPixelColor = function(imageData, width, x, y, color) {
+Config.prototype.setPixelColor = function(imageData, width, x, y, color) {
 	this.setPixelRGBA(imageData, width, x, y, color[0], color[1], color[2], color[3] * 255)
 };
 
-lutGenerator.prototype.addCell = function(name, red, green, blue, density) {
+Config.prototype.addCell = function(name, red, green, blue, density) {
 	var index = this.numCells;
 
 	this.cells[name] = {
@@ -67,7 +67,7 @@ lutGenerator.prototype.addCell = function(name, red, green, blue, density) {
 	this.addRule(name, name, name, name);
 };
 
-lutGenerator.prototype.addRule = function(current, neighbor, newCurrent, newNeighbor) {
+Config.prototype.addRule = function(current, neighbor, newCurrent, newNeighbor) {
 	var currentCell = this.cells[current];
 	var neighborCell = this.cells[neighbor];
 
@@ -78,7 +78,7 @@ lutGenerator.prototype.addRule = function(current, neighbor, newCurrent, newNeig
 	this.setPixelColor(this.rulesData, this.rulesCanvas.width, neighborCell.index, currentCell.index, newNeighborCell.color);
 };
 
-lutGenerator.prototype.parse = function(text) {
+Config.prototype.parse = function(text) {
 	var lines = text.split('\n');
 
 	for (var l = 0; l < lines.length; l++) {

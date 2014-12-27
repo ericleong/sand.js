@@ -7,13 +7,13 @@
 
 	<title>sand.js</title>
 
-	<script src="js/lutGenerator.js"></script>
+	<script src="js/config.js"></script>
 	<script src="js/utils.js"></script>
 	<script src="js/sand.js"></script>
 	<script src="js/draw.js"></script>
 	<script src="js/user.js"></script>
 
-	<script id="shader-fs-copy" type="x-shader/x-fragment">
+	<script id="shader-fs-draw" type="x-shader/x-fragment">
 		varying highp vec2 vTextureCoord;
 
 		uniform sampler2D uSampler;
@@ -23,7 +23,7 @@
 		}
 	</script>
 
-	<script id="shader-vs-copy" type="x-shader/x-vertex">
+	<script id="shader-vs-draw" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec2 aTextureCoord;
 
@@ -36,7 +36,7 @@
 		}
 	</script>
 
-	<script id="shader-fs-advance" type="x-shader/x-fragment">
+	<script id="shader-fs-sand" type="x-shader/x-fragment">
 		varying highp vec2 vTextureCoord;
 
 		varying highp vec2 vTextureCoordAbove;
@@ -123,7 +123,7 @@
 		}
 	</script>
 
-	<script id="shader-vs-advance" type="x-shader/x-vertex">
+	<script id="shader-vs-sand" type="x-shader/x-vertex">
 		attribute vec3 aVertexPosition;
 		attribute vec2 aTextureCoord;
 
