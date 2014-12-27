@@ -131,6 +131,22 @@ function initUserInput(canvas) {
 		};
 	}
 
+	function getCurrentColor() {
+		var color = 'rgba(255, 255, 255, 1.0)';
+
+		for (var i = 0; i < radios.length; i++) {
+			if (radios[i].checked) {
+				var cell = sand.config.cells[radios[i].value];
+
+				color = 'rgba(' + cell.color[0] + ', ' + cell.color[1] + ', ' + cell.color[2] + ', ' + cell.color[3].toFixed(3) + ')';
+
+				break;
+			}
+		}
+
+		return color;
+	}
+
 	function drawCanvas(canvas, mousePos, color, texture) {
 		var context = canvas.getContext('2d');
 
@@ -148,7 +164,7 @@ function initUserInput(canvas) {
 		updateInput = true;
 	}
 
-	function handleStart(evt) {
+	function handleMouseDown(evt) {
 		evt.preventDefault();
 
 		down = true;
@@ -160,29 +176,19 @@ function initUserInput(canvas) {
 		} else if (evt.altKey) { // fire
 			color = 'rgba(255, 0, 0, 0.1)';
 		} else {
-			color = 'rgba(255, 255, 255, 1.0)';
-
-			for (var i = 0; i < radios.length; i++) {
-				if (radios[i].checked) {
-					var cell = sand.config.cells[radios[i].value];
-
-					color = 'rgba(' + cell.color[0] + ', ' + cell.color[1] + ', ' + cell.color[2] + ', ' + cell.color[3].toFixed(3) + ')';
-
-					break;
-				}
-			}
+			color = getCurrentColor();
 		}
 
 		drawEvent(canvas, evt);
 	}
 
-	function handleEnd(evt) {
+	function handleMouseUp(evt) {
 		evt.preventDefault();
 
 		down = false;
 	}
 
-	function handleMove(evt) {
+	function handleMouseMove(evt) {
 		evt.preventDefault();
 
 		if (down) {
@@ -190,10 +196,66 @@ function initUserInput(canvas) {
 		}
 	}
 
-	canvas.addEventListener('mousedown', handleStart, true);
-	canvas.addEventListener('mouseup', handleEnd, true);
+	canvas.addEventListener('mousedown', handleMouseDown, true);
+	canvas.addEventListener('mouseup', handleMouseUp, true);
 	canvas.addEventListener('mouseleave', handleEnd, true);
-	canvas.addEventListener('mousemove', handleMove, true);
+	canvas.addEventListener('mousemove', handleMouseMove, true);
+
+	var ongoingTouches = [];
+
+	function copyTouch(touch) {
+		return { identifier: touch.identifier, clientX: touch.clientX, clientY: touch.clientY };
+	}
+
+	function ongoingTouchIndexById(idToFind) {
+		for (var i=0; i < ongoingTouches.length; i++) {
+			var id = ongoingTouches[i].identifier;
+
+			if (id == idToFind) {
+				return i;
+			}
+		}
+		return -1; // not found
+	}
+
+	function handleStart(evt) {
+		evt.preventDefault();
+
+		for (var i = 0; i < evt.changedTouches.length; i++) {
+			var touch = copyTouch(evt.changedTouches[i]);
+
+			ongoingTouches.push(touch);
+			drawEvent(canvas, touch);
+		}
+	}
+
+	function handleMove(evt) {
+		evt.preventDefault();
+
+		for (var i = 0; i < evt.changedTouches.length; i++) {
+			var idx = ongoingTouchIndexById(evt.changedTouches[i].identifier);
+
+			if (idx >= 0) {
+				var touch = copyTouch(evt.changedTouches[i]);
+
+				drawEvent(canvas, touch);
+
+				ongoingTouches.splice(idx, 1, touch);
+			}
+		}
+	}
+
+	function handleEnd(evt) {
+		evt.preventDefault();
+
+		for (var i = 0; i < evt.changedTouches.length; i++) {
+			var idx = ongoingTouchIndexById(evt.changedTouches[i].identifier);
+
+			if (idx >= 0) {
+				ongoingTouches.splice(idx, 1);
+			}
+		}
+	}
 
 	canvas.addEventListener('touchstart', handleStart, true);
 	canvas.addEventListener('touchend', handleEnd, true);
