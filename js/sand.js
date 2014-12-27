@@ -195,8 +195,16 @@ Sand.prototype.initTextures = function(canvas, config) {
 	this.sandTexture1 = tex[0];
 	this.sandFrameBuffer1 = tex[1];
 
-	// load config
-	this.config = new Config();
+	this.loadConfig(config);
+
+	this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+}
+
+Sand.prototype.loadConfig = function(config) {
+	// does not reset
+
+	this.config = this.config === undefined ? new Config() : this.config;
+
 	this.config.parse(config);
 
 	this.cellsTexture = SandUtils.initTexture(this.gl, this.config.cellsData, false);

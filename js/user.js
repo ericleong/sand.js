@@ -9,6 +9,7 @@ var updateInput = false;
 
 var draw;
 var sand;
+var radios;
 
 function start() {
 	var canvas = document.getElementById('glcanvas');
@@ -19,11 +20,44 @@ function start() {
 	if (sand.gl) {
 		draw = new Draw(sand.gl, sand.rectVerticesBuffer, sand.rectVerticesTextureCoordBuffer);
 
+		updateCellsList();		
+
 		var rectImage = new Image();
 		rectImage.onload = function() { handleTextureLoaded(rectImage); }
 		rectImage.src = './sand.png';
 
 		initUserInput(canvas);
+	}
+}
+
+function updateCellsList() {
+	radios = [];
+	var cellSelect = document.getElementById('cell-select');
+
+	// remove all children
+	while (cellSelect.lastChild) {
+		cellSelect.removeChild(cellSelect.lastChild);
+	}
+
+	for (var i = 0; i < sand.config.index.length; i++) {
+		var cell = sand.config.index[i];
+		
+		var item = document.createElement('div');
+		var radio = document.createElement('input');
+		radio.setAttribute('type', 'radio');
+		radio.setAttribute('name', 'cell');
+		radio.setAttribute('value', cell.name);
+
+		if (i == 0) {
+			radio.setAttribute('checked', '');
+		}
+
+		radios.push(radio);
+
+		item.appendChild(radio);
+		item.appendChild(document.createTextNode(cell.name));
+
+		cellSelect.appendChild(item);
 	}
 }
 
@@ -128,8 +162,18 @@ function initUserInput(canvas) {
 			color = 'rgba(0, 0, 0, 0.5)';
 		} else if (evt.altKey) { // fire
 			color = 'rgba(255, 0, 0, 0.1)';
-		} else { // sand
+		} else {
 			color = 'rgba(255, 255, 255, 1.0)';
+
+			for (var i = 0; i < radios.length; i++) {
+				if (radios[i].checked) {
+					var cell = sand.config.cells[radios[i].value];
+
+					color = 'rgba(' + cell.color[0] + ', ' + cell.color[1] + ', ' + cell.color[2] + ', ' + cell.color[3].toFixed(3) + ')';
+
+					break;
+				}
+			}
 		}
 
 		drawEvent(canvas, evt);
@@ -154,11 +198,20 @@ function initUserInput(canvas) {
 	canvas.addEventListener('mouseleave', handleEnd, true);
 	canvas.addEventListener('mousemove', handleMove, true);
 
-	canvas.addEventListener("touchstart", handleStart, true);
-	canvas.addEventListener("touchend", handleEnd, true);
-	canvas.addEventListener("touchcancel", handleEnd, true);
-	canvas.addEventListener("touchleave", handleEnd, true);
-	canvas.addEventListener("touchmove", handleMove, true);
+	canvas.addEventListener('touchstart', handleStart, true);
+	canvas.addEventListener('touchend', handleEnd, true);
+	canvas.addEventListener('touchcancel', handleEnd, true);
+	canvas.addEventListener('touchleave', handleEnd, true);
+	canvas.addEventListener('touchmove', handleMove, true);
+
+	var update = document.getElementById('update');
+	update.addEventListener('click', function(evt) {
+		sand.config.reset();
+
+		sand.loadConfig(document.getElementById('config').value);
+
+		updateCellsList();
+	}, false);
 }
 
 function drawInput(gl) {

@@ -20,6 +20,7 @@ var Config = function(cellsCanvas, rulesCanvas) {
 
 Config.prototype.reset = function() {
 	this.cells = {};
+	this.index = [];
 	this.numCells = 0;
 
 	var cellsContext = this.cellsCanvas.getContext('2d');
@@ -50,8 +51,11 @@ Config.prototype.addCell = function(name, red, green, blue, density) {
 
 	this.cells[name] = {
 		index: index,
+		name: name,
 		color: [red, green, blue, density]
 	};
+
+	this.index[index] = this.cells[name];
 
 	var blueScaled = blue * (64 - 1) / 255; // out of 64
 	var tileY = Math.floor(Math.floor(blueScaled) / 8);

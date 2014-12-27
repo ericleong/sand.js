@@ -172,7 +172,8 @@
 
 <body onload="start()">
 	<canvas id="glcanvas" width="1280" height="720">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
-	<textarea id="config" rows="20" cols="30" readonly>cell empty 0 0 0 0.5
+	<div id="cell-select"></div>
+	<textarea id="config" rows="20" cols="30">cell empty 0 0 0 0.5
 cell sand 255 255 255 1.0
 cell wall 127 127 127 0.5
 cell fire 255 0 0 0.1
@@ -182,5 +183,6 @@ rule wall sand wall sand
 rule wall fire wall empty
 rule empty fire empty empty
 rule fire sand fire fire</textarea>
+	<button id="update">update</button>
 </body>
 </html>
