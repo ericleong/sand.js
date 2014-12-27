@@ -37,7 +37,7 @@ function handleTextureLoaded(image) {
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(image, 0, 0);
 
-	var tex = initTextureWithFrameBuffer(canvas);
+	var tex = SandUtils.initTextureWithFrameBuffer(canvas);
 	rectTexture = tex[0];
 	rectFrameBuffer = tex[1];
 
@@ -45,7 +45,7 @@ function handleTextureLoaded(image) {
 	context.fillStyle = 'rgba(255, 255, 255, 1.0)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 
-	tex = initTextureWithFrameBuffer(canvas);
+	tex = SandUtils.initTextureWithFrameBuffer(canvas);
 	maskTexture = tex[0];
 	maskFrameBuffer = tex[1];
 
