@@ -7,6 +7,8 @@ var rectFrameBuffer, maskFrameBuffer;
 // draw input hint
 var updateInput = false;
 
+var drawer;
+
 function start() {
 	var canvas = document.getElementById('glcanvas');
 	var config = document.getElementById('config').textContent;
@@ -14,13 +16,13 @@ function start() {
 	init(canvas, config);
 
 	if (gl) {
+		drawer = new draw(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer);
+
 		var rectImage = new Image();
 		rectImage.onload = function() { handleTextureLoaded(rectImage); }
 		rectImage.src = './sand.png';
 
 		initUserInput(canvas);
-		
-		window.requestAnimationFrame(drawScene);
 	}
 }
 
@@ -61,7 +63,7 @@ function handleTextureLoaded(image) {
 }
 
 function animate() {
-	drawScene();
+	drawer.drawScene(sandBuffer == 0 ? sandTexture0 : sandTexture1);
 
 	window.requestAnimationFrame(animate);
 }
@@ -105,7 +107,7 @@ function initUserInput(canvas) {
 		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
-	function draw(canvas, evt) {
+	function drawEvent(canvas, evt) {
 		var mousePos = getMousePos(canvas, evt);
 
 		drawCanvas(painter, mousePos, color, rectTexture);
@@ -129,7 +131,7 @@ function initUserInput(canvas) {
 			color = 'rgba(255, 255, 255, 1.0)';
 		}
 
-		draw(canvas, evt);
+		drawEvent(canvas, evt);
 	}
 
 	function handleEnd(evt) {
@@ -142,7 +144,7 @@ function initUserInput(canvas) {
 		evt.preventDefault();
 
 		if (down) {
-			draw(canvas, evt);
+			drawEvent(canvas, evt);
 		}
 	}
 
@@ -161,21 +163,21 @@ function initUserInput(canvas) {
 function drawInput() {
 	/* add user input */
 
-	gl.useProgram(copyProgram);
+	gl.useProgram(drawer.program);
 	
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
-	gl.vertexAttribPointer(aCopyVertexPosition, 3, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, drawer.rectVerticesBuffer);
+	gl.vertexAttribPointer(drawer.aVertexPosition, 3, gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
-	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(aCopyTextureCoord, 2, gl.FLOAT, false, 0, 0);
+	gl.bindBuffer(gl.ARRAY_BUFFER, drawer.rectVerticesTextureCoordBuffer);
+	gl.vertexAttribPointer(drawer.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
 
 	// Specify the texture to map onto the face.
-	gl.uniform1i(uCopySampler, 0);
+	gl.uniform1i(drawer.uSampler, 0);
 
 	// draw mask
 	gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);

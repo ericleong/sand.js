@@ -12,18 +12,15 @@ var sandFrameBuffer0, sandFrameBuffer1;
 var rectVerticesBuffer;
 var rectVerticesTextureCoordBuffer;
 
-var copyProgram, advanceProgram;
+var advanceProgram;
+
+// vertex attrib locations
 var aAdvanceVertexPosition;
 var aAdvanceTextureCoord;
 
 // uniform locations
-var uCopySampler;
 var uAdvanceSampler, uAdvanceCells, uAdvanceRules;
 var uBias;
-
-// vertex attrib locations
-var aCopyVertexPosition;
-var aCopyTextureCoord;
 
 //
 // init
@@ -181,65 +178,19 @@ function advance() {
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function drawScene() {
-	/* copy framebuffer to screen */
-
-	gl.useProgram(copyProgram);
-
-	// draw onto screen
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	gl.blendFunc(gl.ONE, gl.ZERO);
-	gl.colorMask(true, true, true, false);
-
-	// Draw the rect by binding the array buffer to the rect's vertices
-	// array, setting attributes, and pushing it to GL.
-
-	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesBuffer);
-	gl.vertexAttribPointer(aCopyVertexPosition, 3, gl.FLOAT, false, 0, 0);
-
-	// Set the texture coordinates attribute for the vertices.
-	
-	gl.bindBuffer(gl.ARRAY_BUFFER, rectVerticesTextureCoordBuffer);
-	gl.vertexAttribPointer(aCopyTextureCoord, 2, gl.FLOAT, false, 0, 0);
-
-	gl.uniform1i(uCopySampler, 0);
-
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, sandBuffer == 0 ? sandTexture0 : sandTexture1);
-
-	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-	// restore color mask
-	gl.colorMask(true, true, true, true);
-}
-
 //
 // initShaders
 //
-// Initialize the shaders, so WebGL knows how to light our scene.
-//
 function initShaders() {
-	copyProgram = SandUtils.createProgram('shader-vs-copy', 'shader-fs-copy');
 	advanceProgram = SandUtils.createProgram('shader-vs-advance', 'shader-fs-advance');
 
 	// uniforms
-	uCopySampler = gl.getUniformLocation(copyProgram, 'uSampler');
 	uAdvanceSampler = gl.getUniformLocation(advanceProgram, 'uSampler');
 	uAdvanceCells = gl.getUniformLocation(advanceProgram, 'uCells');
 	uAdvanceRules = gl.getUniformLocation(advanceProgram, 'uRules');
 	uBias = gl.getUniformLocation(advanceProgram, 'uBias');
 
 	// vertex attributes
-	aCopyVertexPosition = gl.getAttribLocation(copyProgram, 'aVertexPosition');
-	gl.enableVertexAttribArray(aCopyVertexPosition);
-
-	aCopyTextureCoord = gl.getAttribLocation(copyProgram, 'aTextureCoord');
-	gl.enableVertexAttribArray(aCopyTextureCoord);
-
 	aAdvanceVertexPosition = gl.getAttribLocation(advanceProgram, 'aVertexPosition');
 	gl.enableVertexAttribArray(aAdvanceVertexPosition);
 
