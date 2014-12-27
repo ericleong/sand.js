@@ -11,8 +11,16 @@ var draw;
 var sand;
 var radios;
 
+var painter;
+var mask;
+
+var frameDuration = 8; // ms
+
+var updateCanvas;
+var updateCanvasInterval;
+
 function start() {
-	var canvas = document.getElementById('glcanvas');
+	var canvas = document.getElementById('sandbox');
 	var config = document.getElementById('config').textContent;
 
 	sand = new Sand(canvas, config);
@@ -62,39 +70,36 @@ function updateCellsList() {
 }
 
 function handleTextureLoaded(image) {
-	var canvas = document.createElement('canvas');
-
-	canvas.width = image.width;
-	canvas.height = image.height;
-
-	var context = canvas.getContext('2d');
+	var painterContext = painter.getContext('2d');
 
 	// 'empty' has a density of 0.5
-	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	context.fillRect(0, 0, canvas.width, canvas.height);
-	context.drawImage(image, 0, 0);
+	painterContext.fillStyle = 'rgba(0, 0, 0, 0.5)';
+	painterContext.fillRect(0, 0, painter.width, painter.height);
+	painterContext.drawImage(image, 0, 0);
 
-	var tex = SandUtils.initTextureWithFrameBuffer(sand.gl, canvas);
+	var tex = SandUtils.initTextureWithFrameBuffer(sand.gl, painter);
 	rectTexture = tex[0];
 	rectFrameBuffer = tex[1];
 
-	// create mask, draw the entire image
-	context.fillStyle = 'rgba(255, 255, 255, 1.0)';
-	context.fillRect(0, 0, canvas.width, canvas.height);
+	var maskContext = mask.getContext('2d');
 
-	tex = SandUtils.initTextureWithFrameBuffer(sand.gl, canvas);
+	// create mask, draw the entire image
+	maskContext.fillStyle = 'rgba(255, 255, 255, 1.0)';
+	maskContext.fillRect(0, 0, mask.width, mask.height);
+
+	tex = SandUtils.initTextureWithFrameBuffer(sand.gl, mask);
 	maskTexture = tex[0];
 	maskFrameBuffer = tex[1];
 
 	draw.gl.bindTexture(draw.gl.TEXTURE_2D, null);
 
-	// tell the engine to update the buffers with input
+	// tell updateCanvas() to update the buffers with input
 	updateInput = true;
 
-	setInterval(engine, 8);
+	updateCanvasInterval = window.setInterval(updateCanvas, frameDuration);
 
 	// Set up to draw the scene periodically.
-	window.requestAnimationFrame(animate);	
+	window.requestAnimationFrame(animate);
 }
 
 function animate() {
@@ -108,8 +113,8 @@ function initUserInput(canvas) {
 	var color = 'rgba(255, 255, 255, 1.0)';
 
 	// create a new canvas
-	var painter = document.createElement('canvas');
-	var mask = document.createElement('canvas');
+	painter = document.createElement('canvas');
+	mask = document.createElement('canvas');
 
 	// set dimensions
 	mask.width = canvas.width;
@@ -129,17 +134,9 @@ function initUserInput(canvas) {
 	function drawCanvas(canvas, mousePos, color, texture) {
 		var context = canvas.getContext('2d');
 
-		context.clearRect(0, 0, canvas.width, canvas.height);
-
 		context.fillStyle = color;
 		// use a rectangle because circles are antialiased
 		context.fillRect(mousePos.x - 12, mousePos.y - 12, 24, 24);
-
-		draw.gl.bindTexture(draw.gl.TEXTURE_2D, texture);
-		draw.gl.pixelStorei(draw.gl.UNPACK_FLIP_Y_WEBGL, true);
-		draw.gl.pixelStorei(draw.gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-		draw.gl.texImage2D(draw.gl.TEXTURE_2D, 0, draw.gl.RGBA, draw.gl.RGBA, draw.gl.UNSIGNED_BYTE, canvas);
-		draw.gl.bindTexture(draw.gl.TEXTURE_2D, null);
 	}
 
 	function drawEvent(canvas, evt) {
@@ -214,7 +211,19 @@ function initUserInput(canvas) {
 	}, false);
 }
 
+function updateTexture(gl, texture, canvas) {
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+
+	canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
 function drawInput(gl) {
+	updateTexture(gl, rectTexture, painter);
+	updateTexture(gl, maskTexture, mask);
+
 	/* add user input */
 
 	gl.useProgram(draw.program);
@@ -251,6 +260,8 @@ function drawInput(gl) {
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+	gl.bindTexture(gl.TEXTURE_2D, null);
+
 	// clear mask
 	gl.bindFramebuffer(gl.FRAMEBUFFER, maskFrameBuffer);
 
@@ -264,10 +275,27 @@ function drawInput(gl) {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-function engine() {
+function updateCanvas() {
+	var t0;
+
+	if (performance) {
+		t0 = performance.now();
+	}
+
 	sand.next();
 
 	if (updateInput) {
 		drawInput(draw.gl);
+	}
+
+	if (performance) {
+		t1 = performance.now();
+
+		if (t1 - t0 > frameDuration) {
+			frameDuration *= 2;
+
+			window.clearInterval(updateCanvasInterval);
+			updateCanvasInterval = setInterval(updateCanvas, frameDuration);
+		}
 	}
 }
