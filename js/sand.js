@@ -16,7 +16,7 @@ var Sand = function(canvas, config) {
 		// Initialize the shaders; this is where all the lighting for the
 		// vertices and so forth is established.
 		
-		this.initShaders();
+		this.initShaders(canvas);
 		
 		// Here's where we call the routine that builds all the objects
 		// we'll be drawing.
@@ -39,7 +39,10 @@ Sand.prototype.initWebGL = function(canvas) {
 	var gl = null;
 	
 	try {
-		gl = canvas.getContext('experimental-webgl', { premultipliedAlpha: false });
+		gl = canvas.getContext('experimental-webgl', { 
+			alpha: false,
+			premultipliedAlpha: false
+		});
 	} catch(e) {
 		console.log(e);
 	}
@@ -159,10 +162,17 @@ Sand.prototype.next = function() {
 //
 // initShaders
 //
-Sand.prototype.initShaders = function() {
+Sand.prototype.initShaders = function(canvas) {
 	this.program = SandUtils.createProgram(this.gl, 'shader-vs-sand', 'shader-fs-sand');
 
-	// uniforms
+	// vertex shader uniforms
+	this.uSize = this.gl.getUniformLocation(this.program, 'uSize');
+
+	// set the size of the canvas
+	this.gl.useProgram(this.program);
+	this.gl.uniform2fv(this.uSize, [canvas.width, canvas.height]);
+
+	// fragment shader uniforms
 	this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
 	this.uCells = this.gl.getUniformLocation(this.program, 'uCells');
 	this.uRules = this.gl.getUniformLocation(this.program, 'uRules');

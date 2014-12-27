@@ -56,9 +56,9 @@ Draw.prototype.drawScene = function(texture) {
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesTextureCoordBuffer);
 	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
 
-	this.gl.uniform1i(this.uSampler, 0);
+	this.gl.uniform1i(this.uSampler, 3);
 
-	this.gl.activeTexture(this.gl.TEXTURE0);
+	this.gl.activeTexture(this.gl.TEXTURE3);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
 	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);

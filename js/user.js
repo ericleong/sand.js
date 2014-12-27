@@ -23,6 +23,10 @@ function start() {
 	var canvas = document.getElementById('sandbox');
 	var config = document.getElementById('config').textContent;
 
+	var boundingRect = canvas.getBoundingClientRect();
+	canvas.width = boundingRect.width;
+	canvas.height = boundingRect.height;
+
 	sand = new Sand(canvas, config);
 
 	if (sand.gl) {
@@ -248,12 +252,14 @@ function initUserInput(canvas) {
 	function handleEnd(evt) {
 		evt.preventDefault();
 
-		for (var i = 0; i < evt.changedTouches.length; i++) {
+		if (evt.changedTouches) {
+			for (var i = 0; i < evt.changedTouches.length; i++) {
 			var idx = ongoingTouchIndexById(evt.changedTouches[i].identifier);
 
 			if (idx >= 0) {
 				ongoingTouches.splice(idx, 1);
 			}
+		}
 		}
 	}
 
@@ -301,23 +307,30 @@ function drawInput(gl) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, draw.rectVerticesTextureCoordBuffer);
 	gl.vertexAttribPointer(draw.aTextureCoord, 2, gl.FLOAT, false, 0, 0);
 
-	// Specify the texture to map onto the face.
-	gl.uniform1i(draw.uSampler, 0);
+	/* mask */
+
+	// Specify the texture to use.
+	gl.uniform1i(draw.uSampler, 4);
 
 	// draw mask
 	gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
 
 	// draw user input mask
-	gl.activeTexture(gl.TEXTURE0);
+	gl.activeTexture(gl.TEXTURE4);
 	gl.bindTexture(gl.TEXTURE_2D, maskTexture);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+	/* input */
+
+	// Specify the texture to use.
+	gl.uniform1i(draw.uSampler, 5);
 
 	// preserve alpha
 	gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
 	// draw user input
-	gl.activeTexture(gl.TEXTURE0);
+	gl.activeTexture(gl.TEXTURE5);
 	gl.bindTexture(gl.TEXTURE_2D, rectTexture);
 
 	gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -335,6 +348,8 @@ function drawInput(gl) {
 
 	gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
 	gl.clear(gl.COLOR_BUFFER_BIT);
+
+	updateInput = false;
 }
 
 function updateCanvas() {

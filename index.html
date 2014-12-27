@@ -7,6 +7,8 @@
 
 	<title>sand.js</title>
 
+	<link rel="stylesheet" type="text/css" href="css/sandbox.css">
+
 	<script src="js/config.js"></script>
 	<script src="js/utils.js"></script>
 	<script src="js/sand.js"></script>
@@ -146,33 +148,36 @@
 		varying highp vec2 vTextureCoordBelowRight;
 		varying highp vec2 vTextureCoordBelowRightRight;
 
+		uniform highp vec2 uSize;
+
 		void main(void) {
 			gl_Position = vec4(aVertexPosition, 1.0);
 
 			vTextureCoord = aTextureCoord;
-			vTextureCoordAbove = aTextureCoord + vec2(0.0, 1.0 / 720.0);
-			vTextureCoordAboveLeft = aTextureCoord + vec2(-1.0 / 1280.0, 1.0 / 720.0);
-			vTextureCoordAboveLeftLeft = aTextureCoord + vec2(-2.0 / 1280.0, 1.0 / 720.0);
-			vTextureCoordAboveRight = aTextureCoord + vec2(1.0 / 1280.0, 1.0 / 720.0);
-			vTextureCoordAboveRightRight = aTextureCoord + vec2(2.0 / 1280.0, 1.0 / 720.0);
+			vTextureCoordAbove = aTextureCoord + vec2(0.0, 1.0 / uSize.y);
+			vTextureCoordAboveLeft = aTextureCoord + vec2(-1.0 / uSize.x, 1.0 / uSize.y);
+			vTextureCoordAboveLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, 1.0 / uSize.y);
+			vTextureCoordAboveRight = aTextureCoord + vec2(1.0 / uSize.x, 1.0 / uSize.y);
+			vTextureCoordAboveRightRight = aTextureCoord + vec2(2.0 / uSize.x, 1.0 / uSize.y);
 
-			vTextureCoordLeft = aTextureCoord + vec2(-1.0 / 1280.0, 0.0);
-			vTextureCoordLeftLeft = aTextureCoord + vec2(-2.0 / 1280.0, 0.0);
-			vTextureCoordRight = aTextureCoord + vec2(1.0 / 1280.0, 0.0);
-			vTextureCoordRightRight = aTextureCoord + vec2(2.0 / 1280.0, 0.0);
+			vTextureCoordLeft = aTextureCoord + vec2(-1.0 / uSize.x, 0.0);
+			vTextureCoordLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, 0.0);
+			vTextureCoordRight = aTextureCoord + vec2(1.0 / uSize.x, 0.0);
+			vTextureCoordRightRight = aTextureCoord + vec2(2.0 / uSize.x, 0.0);
 		
-			vTextureCoordBelow = aTextureCoord + vec2(0.0, -1.0 / 720.0);
-			vTextureCoordBelowLeft = aTextureCoord + vec2(-1.0 / 1280.0, -1.0 / 720.0);
-			vTextureCoordBelowLeftLeft = aTextureCoord + vec2(-2.0 / 1280.0, -1.0 / 720.0);
-			vTextureCoordBelowRight = aTextureCoord + vec2(1.0 / 1280.0, -1.0 / 720.0);
-			vTextureCoordBelowRightRight = aTextureCoord + vec2(2.0 / 1280.0, -1.0 / 720.0);
+			vTextureCoordBelow = aTextureCoord + vec2(0.0, -1.0 / uSize.y);
+			vTextureCoordBelowLeft = aTextureCoord + vec2(-1.0 / uSize.x, -1.0 / uSize.y);
+			vTextureCoordBelowLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, -1.0 / uSize.y);
+			vTextureCoordBelowRight = aTextureCoord + vec2(1.0 / uSize.x, -1.0 / uSize.y);
+			vTextureCoordBelowRightRight = aTextureCoord + vec2(2.0 / uSize.x, -1.0 / uSize.y);
 		}
 	</script>
 </head>
 
 <body onload="start()">
-	<canvas id="sandbox" width="1280" height="720">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
-	<div id="cell-select"></div>
+	<canvas id="sandbox">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
+	<div id="options">
+		<div id="cell-select"></div>
 	<textarea id="config" rows="20" cols="30">cell empty 0 0 0 0.5
 cell sand 255 255 255 1.0
 cell wall 127 127 127 0.5
@@ -183,6 +188,7 @@ rule wall sand wall sand
 rule wall fire wall empty
 rule empty fire empty empty
 rule fire sand fire fire</textarea>
-	<button id="update">update</button>
+		<button id="update">update</button>
+	</div>
 </body>
 </html>
