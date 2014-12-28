@@ -141,7 +141,15 @@ function handleTextureLoaded(image) {
 	maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
 
 	// tell updateSand() to update the buffers with input
-	updateInput = true;
+	updateInput = 1;
+}
+
+function getCurrentCell() {
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			return sand.config.cells[radios[i].value];
+		}
+	}
 }
 
 function getRGB(color) {
@@ -177,7 +185,6 @@ function animate() {
 
 function initUserInput(canvas) {
 	var down = false;
-	var color = 'rgba(255, 255, 255, 1.0)';
 
 	function getMousePos(canvas, evt) {
 		var rect = canvas.getBoundingClientRect();
@@ -187,53 +194,26 @@ function initUserInput(canvas) {
 		};
 	}
 
-	function getCurrentColor() {
-		var color = 'rgba(255, 255, 255, 1.0)';
-
-		for (var i = 0; i < radios.length; i++) {
-			if (radios[i].checked) {
-				var cell = sand.config.cells[radios[i].value];
-
-				color = getRGBA(cell.color);
-
-				break;
-			}
-		}
-
-		return color;
-	}
-
 	function drawCanvas(canvas, mousePos, color) {
 		var context = canvas.getContext('2d');
 
-		context.fillStyle = color;
 		// use a rectangle because circles are antialiased
-		context.fillRect(mousePos.x - 12, mousePos.y - 12, 24, 24);
+		context.fillStyle = color;
+		context.fillRect(Math.floor(mousePos.x) - 12, Math.floor(mousePos.y) - 12, 24, 24);
 	}
 
 	function drawEvent(canvas, evt) {
 		var mousePos = getMousePos(canvas, evt);
 
-		drawCanvas(input.inputCanvas, mousePos, color);
 		drawCanvas(input.maskCanvas, mousePos, 'rgba(255, 255, 255, 1.0)');
 
-		updateInput = true;
+		updateInput = 2;
 	}
 
 	function handleMouseDown(evt) {
 		evt.preventDefault();
 
 		down = true;
-
-		if (evt.shiftKey) { // wall
-			color = 'rgba(127, 127, 127, 0.5)';
-		} else if (evt.ctrlKey) { // empty
-			color = 'rgba(0, 0, 0, 0.5)';
-		} else if (evt.altKey) { // fire
-			color = 'rgba(255, 0, 0, 0.1)';
-		} else {
-			color = getCurrentColor();
-		}
 
 		drawEvent(canvas, evt);
 	}
@@ -264,7 +244,7 @@ function initUserInput(canvas) {
 	}
 
 	function ongoingTouchIndexById(idToFind) {
-		for (var i=0; i < ongoingTouches.length; i++) {
+		for (var i = 0; i < ongoingTouches.length; i++) {
 			var id = ongoingTouches[i].identifier;
 
 			if (id == idToFind) {
@@ -282,7 +262,6 @@ function initUserInput(canvas) {
 
 			ongoingTouches.push(touch);
 
-			color = getCurrentColor();
 			drawEvent(canvas, touch);
 		}
 	}
@@ -308,12 +287,12 @@ function initUserInput(canvas) {
 
 		if (evt.changedTouches) {
 			for (var i = 0; i < evt.changedTouches.length; i++) {
-			var idx = ongoingTouchIndexById(evt.changedTouches[i].identifier);
+				var idx = ongoingTouchIndexById(evt.changedTouches[i].identifier);
 
-			if (idx >= 0) {
-				ongoingTouches.splice(idx, 1);
+				if (idx >= 0) {
+					ongoingTouches.splice(idx, 1);
+				}
 			}
-		}
 		}
 	}
 
@@ -367,6 +346,33 @@ function togglePause() {
 	paused = !paused;
 }
 
+function prepareInput() {
+	// need to set the alpha properly before passing it to the sand buffer
+
+	var cell = getCurrentCell();
+
+	var maskContext = input.maskCanvas.getContext('2d');
+
+	maskContext.save();
+
+	maskContext.globalCompositeOperation = 'source-in';
+	maskContext.fillStyle = getRGB(cell.color);
+	maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
+
+	maskContext.restore();
+
+
+	var inputContext = input.inputCanvas.getContext('2d');
+
+	inputContext.save();
+
+	inputContext.globalAlpha = cell.color[3];
+	inputContext.clearRect(0, 0, input.inputCanvas.width, input.inputCanvas.height);
+	inputContext.drawImage(input.maskCanvas, 0, 0);
+
+	inputContext.restore();
+}
+
 var t0, t1;
 
 function updateSand() {
@@ -390,8 +396,12 @@ function updateSand() {
 		}
 	}
 
-	if (updateInput) {
+	if (updateInput > 0) {
+		if (updateInput == 2) {
+			prepareInput();
+		}
+
 		input.drawInput();
-		updateInput = false;
+		updateInput = 0;
 	}
 }
