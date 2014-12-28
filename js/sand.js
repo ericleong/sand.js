@@ -1,3 +1,5 @@
+'use strict';
+
 //
 // init
 //
@@ -137,21 +139,21 @@ Sand.prototype.next = function() {
 	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
 	
 	// Specify the texture to map onto the face.
-	this.gl.uniform1i(this.uSampler, 0);
+	this.gl.uniform1i(this.uSampler, this.sandBuffer == 0 ? 1 : 0);
 	
-	this.gl.activeTexture(this.gl.TEXTURE0);
+	this.gl.activeTexture(this.sandBuffer == 0 ? this.gl.TEXTURE1 : this.gl.TEXTURE0);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.sandBuffer == 0 ? this.sandTexture1 : this.sandTexture0);
 	
 	// Pass cells texture
-	this.gl.uniform1i(this.uCells, 1);
+	this.gl.uniform1i(this.uCells, 2);
 	
-	this.gl.activeTexture(this.gl.TEXTURE1);
+	this.gl.activeTexture(this.gl.TEXTURE2);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.cellsTexture);
 	
 	// Pass cells texture
-	this.gl.uniform1i(this.uRules, 2);
+	this.gl.uniform1i(this.uRules, 3);
 	
-	this.gl.activeTexture(this.gl.TEXTURE2);
+	this.gl.activeTexture(this.gl.TEXTURE3);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.rulesTexture);
 	
 	this.gl.uniform1i(this.uBias, this.sandBuffer);
@@ -197,7 +199,7 @@ Sand.prototype.initTextures = function(canvas, config) {
 	// keep buffers empty
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	
-	tex = SandUtils.initTextureWithFrameBuffer(this.gl, canvas);
+	var tex = SandUtils.initTextureWithFrameBuffer(this.gl, canvas);
 	this.sandTexture0 = tex[0];
 	this.sandFrameBuffer0 = tex[1];
 	

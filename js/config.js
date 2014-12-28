@@ -1,3 +1,5 @@
+'use strict';
+
 var Config = function(cellsCanvas, rulesCanvas) {
 	if (cellsCanvas === undefined) {
 		this.cellsCanvas = document.createElement('canvas');

@@ -1,9 +1,14 @@
+* {
+	box-sizing: border-box;
+}
+
 html, body {
 	margin: 0;
-	width: 100%;
-	height: 100%;
+	width: 100vw;
+	height: 100vh;
 
 	font-size: 0;
+	font-family: sans-serif;
 }
 
 body > * {
@@ -11,17 +16,133 @@ body > * {
 	vertical-align: top;
 }
 
-#sandbox {
-	width: 80%;
-	height: 100%;
+textarea {
+	resize: none;
+	outline: none;
+	overflow: auto;
 }
 
-#options {
-	width: 20%;
+#sandbox {
+	width: 80vw;
+	height: 100vh;
+}
+
+#sidebar {
+	position: relative;
+	width: 20vw;
 
 	font-size: 12pt;
 }
 
-#options > button {
+#sidebar > h1 {
+	font-size: 6vh;
+
+	margin-top: 1vh;
+	margin-bottom: 1vh;
+	margin-left: 1vw;
+}
+
+#sidebar > h2 {
+	font-size: 4vh;
+	font-variant: small-caps;
+
+	margin-top: 2vh;
+	margin-bottom: 1vh;
+	margin-left: 3vw;
+}
+
+#sidebar > button {
 	display: block;
+	width: 18vw;
+
+	border: none;
+}
+
+#sidebar > button:focus {
+	outline: 0;
+}
+
+#settings > a, #sidebar > button {
+	display: inline-block;
+	cursor: pointer;
+	
+	padding-top: 1vh;
+	padding-bottom: 1vh;
+	margin-left: 1vw;
+	margin-right: 1vw;
+
+	background-color: lightGray;
+
+	font-size: 14pt;
+	text-align: center;
+}
+
+#settings > a, #settings > a:link, #settings > a:visited {
+	width: 8.5vw;
+
+	margin-top: 1vw;
+
+	text-decoration: none;
+	color: black;
+}
+
+#settings > a:first-child {
+	margin-right: 0;
+}
+
+#settings > a:hover, #settings > a:active, #sidebar > button:hover {
+	background-color: darkGray;
+	color: white;
+}
+
+#cell-select {
+	column-count: auto;
+	font-size: 0;
+
+	margin-bottom: 1vw;
+	margin-left: 1vw;
+}
+
+#cell-select > div {
+	display: inline-block;
+}
+
+#cell-select > div > input[type="radio"] {
+	display: none;
+}
+
+#cell-select > div > input[type="radio"] + label {
+	display: block;
+
+	width: 9vw;
+	padding-left: 1vw;
+	padding-right: 1vw;
+	padding-top: 1vh;
+	padding-bottom: 1vh;
+
+	color: gray;
+	font-size: 3vh;
+}
+
+#cell-select > div > input[type="radio"]:checked + label {
+	color: black;
+	background-color: lightGray;
+}
+
+#cell-select > div > input[type="radio"] + label:hover {
+	color: white;
+	background-color: darkGray;
+}
+
+#file-input {
+	display: none;
+}
+
+#config {
+	width: 18vw;
+	max-height: 30vh;
+
+	margin-bottom: 1vw;
+	margin-left: 1vw;
+	margin-right: 1vw;
 }

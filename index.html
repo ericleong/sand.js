@@ -13,7 +13,8 @@
 	<script src="js/utils.js"></script>
 	<script src="js/sand.js"></script>
 	<script src="js/draw.js"></script>
-	<script src="js/user.js"></script>
+	<script src="js/input.js"></script>
+	<script src="js/sandbox.js"></script>
 
 	<script id="shader-fs-draw" type="x-shader/x-fragment">
 		varying highp vec2 vTextureCoord;
@@ -176,9 +177,14 @@
 
 <body onload="start()">
 	<canvas id="sandbox">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
-	<div id="options">
+	<div id="sidebar">
+		<h1>sand.js</h1>
+		<h2>cells</h2>
 		<div id="cell-select"></div>
-	<textarea id="config" rows="20" cols="30">cell empty 0 0 0 0.5
+		<button id="pause">pause</button>
+		<div id="settings"><a id="save-sandbox">save</a><a id="load-sandbox">load</a><input type="file" id="file-input" accept="image/*" onchange="handleImages(this.files)"></div>
+		<h2>config</h2>
+		<textarea id="config" rows="20" cols="30" wrap="off">cell empty 0 0 0 0.5
 cell sand 255 255 255 1.0
 cell wall 127 127 127 0.5
 cell fire 255 0 0 0.1

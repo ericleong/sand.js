@@ -1,3 +1,5 @@
+'use strict';
+
 var SandUtils = {};
 
 SandUtils.createProgram = function(gl, vertexShaderId, fragmentShaderId) {

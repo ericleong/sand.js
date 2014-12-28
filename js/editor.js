@@ -1,8 +1,8 @@
-var generator;
+var config;
 var cellsCanvas, rulesCanvas;
 
 function start() {
-	generator = new lutGenerator(document.getElementById('cells'), document.getElementById('rules'));
+	config = new Config(document.getElementById('cells'), document.getElementById('rules'));
 
 	var updateButton = document.getElementById('update');
 	updateButton.addEventListener('click', function(evt) {
@@ -13,15 +13,15 @@ function start() {
 }
 
 function update() {
-	generator.reset();
+	config.reset();
 
 	var config = document.getElementById('config');
 	var content = config.value;
 
-	generator.parse(content);
+	config.parse(content);
 
-	generator.cellsCanvas.getContext('2d').putImageData(generator.cellsData, 0, 0);
-	generator.rulesCanvas.getContext('2d').putImageData(generator.rulesData, 0, 0);
+	config.cellsCanvas.getContext('2d').putImageData(config.cellsData, 0, 0);
+	config.rulesCanvas.getContext('2d').putImageData(config.rulesData, 0, 0);
 
 	var cellsDownload = document.getElementById('download-cells');
 	cellsDownload.href = generator.cellsCanvas.toDataURL();
