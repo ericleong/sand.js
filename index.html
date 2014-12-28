@@ -4,9 +4,13 @@
 	<meta charset="UTF-8">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 	<title>sand.js</title>
 
+	<link rel="manifest" href="manifest.json">
+	<link rel="icon" sizes="192x192" href="icon/launcher_icon.png">
 	<link rel="stylesheet" type="text/css" href="css/sandbox.css">
 
 	<script src="js/config.js"></script>
@@ -181,8 +185,7 @@
 		<h1>sand.js</h1>
 		<h2>cells</h2>
 		<div id="cell-select"></div>
-		<button id="pause">pause</button>
-		<div id="settings"><a id="save-sandbox">save</a><a id="load-sandbox">load</a><input type="file" id="file-input" accept="image/*" onchange="handleImages(this.files)"></div>
+		<div id="settings"><button id="pause">pause</button><div><a id="save-sandbox">save</a><a id="load-sandbox">load</a></div><input type="file" id="file-input" accept="image/*" onchange="handleImages(this.files)"></div>
 		<h2>config</h2>
 		<textarea id="config" rows="20" cols="30" wrap="off">cell empty 0 0 0 0.5
 cell sand 255 255 255 1.0

@@ -76,6 +76,7 @@ function updateCellsList() {
 		var cell = sand.config.index[i];
 		
 		var item = document.createElement('div');
+
 		var radio = document.createElement('input');
 		radio.id = 'radio-' + cell.name;
 		radio.setAttribute('name', 'cell');
@@ -90,6 +91,14 @@ function updateCellsList() {
 
 		var label = document.createElement('label');
 		label.setAttribute('for', radio.id);
+		label.style.backgroundColor = getRGB(cell.color);
+		if (relativeLuminance(cell.color[0], cell.color[1], cell.color[2]) > 0.5) {
+			label.style.color = 'black';
+			label.style.borderColor = 'black';
+		} else {
+			label.style.color = 'white';
+			label.style.borderColor = 'white';
+		}
 		label.appendChild(document.createTextNode(cell.name));
 
 		item.appendChild(radio);
@@ -103,7 +112,14 @@ function handleTextureLoaded(image) {
 	var inputContext = input.inputCanvas.getContext('2d');
 
 	inputContext.clearRect(0, 0, input.inputCanvas.width, input.inputCanvas.height);
-	inputContext.drawImage(image, 0, 0);
+
+	if (image.naturalWidth && image.naturalHeight) {
+		inputContext.drawImage(image, 
+			Math.floor((input.inputCanvas.width - image.naturalWidth) / 2),
+			Math.floor((input.inputCanvas.height - image.naturalHeight) / 2));
+	} else {
+		inputContext.drawImage(image, 0, 0);	
+	}
 
 	// set densities
 	var inputData = inputContext.getImageData(0, 0, input.inputCanvas.width, input.inputCanvas.height);
@@ -126,6 +142,31 @@ function handleTextureLoaded(image) {
 
 	// tell updateSand() to update the buffers with input
 	updateInput = true;
+}
+
+function getRGB(color) {
+	return 'rgb(' + color[0] + ', ' + color[1] + ', ' + color[2] + ')';
+}
+
+// from http://www.w3.org/TR/WCAG20/#relativeluminancedef
+function relativeLuminance(R8bit, G8bit, B8bit) {
+
+	var RsRGB = R8bit / 255;
+	var GsRGB = G8bit / 255;
+	var BsRGB = B8bit / 255;
+
+	var R = (RsRGB <= 0.03928) ? RsRGB / 12.92 : Math.pow((RsRGB + 0.055) / 1.055, 2.4);
+	var G = (GsRGB <= 0.03928) ? GsRGB / 12.92 : Math.pow((GsRGB + 0.055) / 1.055, 2.4);
+	var B = (BsRGB <= 0.03928) ? BsRGB / 12.92 : Math.pow((BsRGB + 0.055) / 1.055, 2.4);
+
+	// For the sRGB colorspace, the relative luminance of a color is defined as: 
+	var L = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+
+	return L;
+}
+
+function getRGBA(color) {
+	return 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3].toFixed(3) + ')';
 }
 
 function animate() {
@@ -153,7 +194,7 @@ function initUserInput(canvas) {
 			if (radios[i].checked) {
 				var cell = sand.config.cells[radios[i].value];
 
-				color = 'rgba(' + cell.color[0] + ', ' + cell.color[1] + ', ' + cell.color[2] + ', ' + cell.color[3].toFixed(3) + ')';
+				color = getRGBA(cell.color);
 
 				break;
 			}
