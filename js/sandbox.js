@@ -93,11 +93,11 @@ function updateCellsList() {
 		label.setAttribute('for', radio.id);
 		label.style.backgroundColor = getRGB(cell.color);
 		if (relativeLuminance(cell.color[0], cell.color[1], cell.color[2]) > 0.5) {
-			label.style.color = 'black';
-			label.style.borderColor = 'black';
+			label.classList.remove('light');
+			label.classList.add('dark');
 		} else {
-			label.style.color = 'white';
-			label.style.borderColor = 'white';
+			label.classList.remove('dark');
+			label.classList.add('light');
 		}
 		label.appendChild(document.createTextNode(cell.name));
 

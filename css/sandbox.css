@@ -35,10 +35,14 @@ textarea {
 	color: white;
 	font-size: 0pt;
 	background-color: #212121;
+
+	overflow-x: hidden;
 }
 
 #sidebar > h1 {
 	font-size: 4vw;
+	font-weight: 400;
+	font-family: 'Pompiere';
 
 	margin-top: 1vh;
 	margin-bottom: 1vh;
@@ -46,7 +50,8 @@ textarea {
 }
 
 #sidebar > h2 {
-	font-size: 3vw;
+	font-size: 3vh;
+	font-color: #F5F5F5;
 	font-variant: small-caps;
 
 	margin-top: 2vh;
@@ -56,7 +61,7 @@ textarea {
 
 #sidebar button {
 	display: block;
-	width: 18vw;
+	width: calc(100% - 2vw);
 
 	border: none;
 }
@@ -74,14 +79,21 @@ textarea {
 	margin-left: 1vw;
 	margin-right: 1vw;
 
-	background-color: lightGray;
+	color: #212121;
+	background-color: #CFD8DC;
 
 	font-size: 14pt;
 	text-align: center;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
 #settings a, #settings a:link, #settings a:visited {
-	width: 8.5vw;
+	width: calc(50% - 1.5vw);
 
 	margin-top: 1vw;
 
@@ -94,8 +106,8 @@ textarea {
 }
 
 #settings a:hover, #settings a:active, #sidebar button:hover {
-	background-color: darkGray;
-	color: white;
+	background-color: #37474F;
+	color: #FAFAFA;
 }
 
 #cell-select {
@@ -105,8 +117,9 @@ textarea {
 	margin-bottom: 1vw;
 	margin-left: 1vw;
 	margin-right: 1vw;
+	width: calc(100% - 2vw);
 
-	background-color: white;
+	background-color: #F5F5F5;
 }
 
 #cell-select > div {
@@ -114,8 +127,14 @@ textarea {
 	vertical-align: top;
 	overflow: hidden;
 
-	width: 9vw;
+	width: 50%;
 	height: 7.5vh;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
 #cell-select > div > input[type="radio"] {
@@ -168,17 +187,44 @@ textarea {
 	opacity: 1;
 }
 
+#cell-select > div > input[type="radio"] + label.light {
+	color: #F5F5F5;
+	border-color: #F5F5F5;
+}
+
+#cell-select > div > input[type="radio"]:checked + label.light:hover, #cell-select > div > input[type="radio"]:checked + label.light:focus {
+	color: #E0E0E0;
+	border-color: #E0E0E0;
+}
+
+#cell-select > div > input[type="radio"] + label.dark {
+	color: #212121;
+	border-color: #212121;
+}
+
+#cell-select > div > input[type="radio"]:checked + label.dark:hover, #cell-select > div > input[type="radio"]:checked + label.dark:focus {
+	color: #616161;
+	border-color: #616161;
+}
+
 #file-input {
 	display: none;
 }
 
 #config {
-	width: 18vw;
+	width: calc(100% - 2vw);
 	max-height: 30vh;
 
 	margin-bottom: 1vw;
 	margin-left: 1vw;
 	margin-right: 1vw;
+
+	color: #F5F5F5;
+	background-color: #424242;
+}
+
+#sidebar > #update {
+	margin-bottom: 1vw;
 }
 
 @media screen and (max-aspect-ratio: 1/1) {
@@ -257,5 +303,20 @@ textarea {
 
 	#sidebar button {
 		width: 39vw;
+	}
+
+	#cell-select > div > input[type="radio"] + label {
+		padding-left: 3.5vw;
+		padding-top: 3vw;
+		padding-right: 3vw;
+		padding-bottom: 3vw;
+	}
+
+	#cell-select > div > input[type="radio"]:checked + label {
+		padding-left: 0.75vw;
+		padding-top: 0.25vw;
+		padding-right: 0.25vw;
+		padding-bottom: 0.25vw;
+		border: 2.75vw solid white;
 	}
 }
