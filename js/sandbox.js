@@ -26,11 +26,17 @@ function start() {
 		draw = new Draw(sand.gl, sand.rectVerticesBuffer, sand.rectVerticesTextureCoordBuffer);
 		input = new Input(draw);
 
-		updateCellsList();		
+		updateCellsList();
+		initUserInput(canvas);
 
-		var startupImage = new Image();
-		startupImage.onload = function() { 
-			handleTextureLoaded(startupImage); 
+		if (window.location.protocol.indexOf('file:') == 0) {
+			// because of CORS, outside image files cannot be loaded, so just show a blank canvas
+
+			var maskContext = input.maskCanvas.getContext('2d');
+			maskContext.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
+
+			handleTextureLoaded(input.maskCanvas);
 
 			// update canvas
 			window.clearInterval(updateSandInterval);
@@ -38,10 +44,21 @@ function start() {
 
 			// Set up to draw the scene periodically.
 			window.requestAnimationFrame(animate);
-		}
-		startupImage.src = './sand.png';
+		} else {
+			// load a startup image
+			var startupImage = new Image();
+			startupImage.onload = function() { 
+				handleTextureLoaded(startupImage); 
 
-		initUserInput(canvas);
+				// update canvas
+				window.clearInterval(updateSandInterval);
+				updateSandInterval = window.setInterval(updateSand, frameDuration);
+
+				// Set up to draw the scene periodically.
+				window.requestAnimationFrame(animate);
+			}
+			startupImage.src = './sand.png';
+		}
 	}
 }
 
@@ -118,7 +135,7 @@ function handleTextureLoaded(image) {
 			Math.floor((input.inputCanvas.width - image.naturalWidth) / 2),
 			Math.floor((input.inputCanvas.height - image.naturalHeight) / 2));
 	} else {
-		inputContext.drawImage(image, 0, 0);	
+		inputContext.drawImage(image, 0, 0);
 	}
 
 	// set densities
