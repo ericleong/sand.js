@@ -233,15 +233,26 @@
 		<div id="settings"><button id="pause">pause</button><div><a id="save-sandbox">save</a><a id="load-sandbox">load</a></div><input type="file" id="file-input" accept="image/*" onchange="handleImages(this.files)"></div>
 		<h2>config</h2>
 		<textarea id="config" rows="20" cols="30" wrap="off">cell empty 0 0 0 0.5
-cell sand 255 255 255 1.0
-cell wall 127 127 127 0.5
-cell fire 255 0 0 0.1
+cell sand 255 193 7 1.0
+cell wall 158 158 158 0.5
+cell water 0 145 234 0.9
+cell plant 100 221 23 0.8
+cell fire 213 0 0 0.1
 rule empty sand sand empty
 rule wall empty wall empty
 rule wall sand wall sand
 rule wall fire wall empty
 rule empty fire empty empty
-rule fire sand fire fire</textarea>
+rule fire sand sand empty
+rule plant empty plant empty
+rule plant fire fire fire
+rule plant sand plant sand
+rule plant wall plant wall
+rule empty water water empty
+rule water plant plant plant
+rule water sand sand water
+rule water fire water water
+rule water wall water wall</textarea>
 		<button id="update">update</button>
 	</div>
 </body>

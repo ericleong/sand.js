@@ -60,11 +60,12 @@ Config.prototype.addCell = function(name, red, green, blue, density) {
 	this.index[index] = this.cells[name];
 
 	var blueScaled = blue * (64 - 1) / 255; // out of 64
-	var tileY = Math.floor(Math.floor(blueScaled) / 8);
-	var tileX = Math.floor(blueScaled) % 8;
 
-	var x = tileX * 64 + Math.floor(red * (64 - 1) / 255);
-	var y = tileY * 64 + Math.floor(green * (64 - 1) / 255);
+	var tileY = Math.floor(Math.floor(blueScaled) / 8.0);
+	var tileX = Math.floor(blueScaled) - (tileY * 8.0);
+
+	var x = Math.floor(((tileX * 0.125) + 0.5 / 512.0 + ((red / 255.0) * (0.125 - 1.0 / 512.0))) * 512.0);
+	var y = Math.floor(((tileY * 0.125) + 0.5 / 512.0 + ((green / 255.0) * (0.125 - 1.0 / 512.0))) * 512.0);
 
 	this.setPixelRGBA(this.cellsData, this.cellsCanvas.width, x, y, index, index, index, 255);	
 
