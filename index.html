@@ -50,20 +50,14 @@
 
 		varying highp vec2 vTextureCoordAbove;
 		varying highp vec2 vTextureCoordAboveLeft;
-		varying highp vec2 vTextureCoordAboveLeftLeft;
 		varying highp vec2 vTextureCoordAboveRight;
-		varying highp vec2 vTextureCoordAboveRightRight;
 
 		varying highp vec2 vTextureCoordLeft;
-		varying highp vec2 vTextureCoordLeftLeft;
 		varying highp vec2 vTextureCoordRight;
-		varying highp vec2 vTextureCoordRightRight;
 		
 		varying highp vec2 vTextureCoordBelow;
 		varying highp vec2 vTextureCoordBelowLeft;
-		varying highp vec2 vTextureCoordBelowLeftLeft;
 		varying highp vec2 vTextureCoordBelowRight;
-		varying highp vec2 vTextureCoordBelowRightRight;
 
 		uniform sampler2D uSampler;
 		uniform sampler2D uCells;
@@ -92,40 +86,26 @@
 		void main(void) {
 			mediump vec4 above = texture2D(uSampler, vTextureCoordAbove);
 			mediump vec4 aboveleft = texture2D(uSampler, vTextureCoordAboveLeft);
-			mediump vec4 aboveleftleft = texture2D(uSampler, vTextureCoordAboveLeftLeft);
 			mediump vec4 aboveright = texture2D(uSampler, vTextureCoordAboveRight);
-			mediump vec4 aboverightright = texture2D(uSampler, vTextureCoordAboveRightRight);
 			mediump vec4 current = texture2D(uSampler, vTextureCoord);
-			mediump vec4 leftleft = texture2D(uSampler, vTextureCoordLeftLeft);
 			mediump vec4 left = texture2D(uSampler, vTextureCoordLeft);
 			mediump vec4 right = texture2D(uSampler, vTextureCoordRight);
-			mediump vec4 rightright = texture2D(uSampler, vTextureCoordRightRight);
 			mediump vec4 below = texture2D(uSampler, vTextureCoordBelow);
 			mediump vec4 belowleft = texture2D(uSampler, vTextureCoordBelowLeft);
-			mediump vec4 belowleftleft = texture2D(uSampler, vTextureCoordBelowLeftLeft);
 			mediump vec4 belowright = texture2D(uSampler, vTextureCoordBelowRight);
-			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoordBelowRightRight);
 
 			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a) { // fall to below
 				gl_FragColor = swap(current, below);
 			} else if (vTextureCoordBelow.y >= 0.0 && uBias == 0 && belowleft.a < current.a && left.a <= belowleft.a) { // left bias
 				gl_FragColor = swap(current, belowleft);
-			} else if (vTextureCoordBelow.y >= 0.0 && uBias == 0 && belowright.a < current.a && right.a < belowright.a && (rightright.a <= belowright.a || belowrightright.a <= rightright.a)) {
-				gl_FragColor = swap(current, belowright);
 			} else if (vTextureCoordBelow.y >= 0.0 && uBias != 0 && belowright.a < current.a && right.a <= belowright.a) { // right bias
 				gl_FragColor = swap(current, belowright);
-			} else if (vTextureCoordBelow.y >= 0.0 && uBias != 0 && belowleft.a < current.a && left.a < belowleft.a && (leftleft.a <= belowleft.a || belowleftleft.a <= leftleft.a)) {
-				gl_FragColor = swap(current, belowleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && above.a > current.a) { // take from above
 				gl_FragColor = swap(current, above);
 			} else if (vTextureCoordAbove.y <= 1.0 && uBias == 0 && aboveright.a > current.a && right.a >= aboveright.a) { // left bias
 				gl_FragColor = swap(current, aboveright);
-			} else if (vTextureCoordAbove.y <= 1.0 && uBias == 0 && aboveleft.a > current.a && left.a > aboveleft.a && (leftleft.a >= aboveleft.a || aboveleftleft.a >= leftleft.a) && vTextureCoord.x >= 0.0) {
-				gl_FragColor = swap(current, aboveleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && uBias != 0 && aboveleft.a > current.a && left.a >= aboveleft.a) { // right bias
 				gl_FragColor = swap(current, aboveleft);
-			} else if (vTextureCoordAbove.y <= 1.0 && uBias != 0 && aboveright.a > current.a && right.a > aboveright.a && (rightright.a >= aboveleft.a || aboverightright.a >= rightright.a) && vTextureCoord.x <= 1.0) {
-				gl_FragColor = swap(current, aboveright);
 			} else {
 				gl_FragColor = current;
 			}
@@ -140,20 +120,14 @@
 		
 		varying highp vec2 vTextureCoordAbove;
 		varying highp vec2 vTextureCoordAboveLeft;
-		varying highp vec2 vTextureCoordAboveLeftLeft;
 		varying highp vec2 vTextureCoordAboveRight;
-		varying highp vec2 vTextureCoordAboveRightRight;
 
 		varying highp vec2 vTextureCoordLeft;
-		varying highp vec2 vTextureCoordLeftLeft;
 		varying highp vec2 vTextureCoordRight;
-		varying highp vec2 vTextureCoordRightRight;
 		
 		varying highp vec2 vTextureCoordBelow;
 		varying highp vec2 vTextureCoordBelowLeft;
-		varying highp vec2 vTextureCoordBelowLeftLeft;
 		varying highp vec2 vTextureCoordBelowRight;
-		varying highp vec2 vTextureCoordBelowRightRight;
 
 		uniform highp vec2 uSize;
 
@@ -163,20 +137,14 @@
 			vTextureCoord = aTextureCoord;
 			vTextureCoordAbove = aTextureCoord + vec2(0.0, 1.0 / uSize.y);
 			vTextureCoordAboveLeft = aTextureCoord + vec2(-1.0 / uSize.x, 1.0 / uSize.y);
-			vTextureCoordAboveLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, 1.0 / uSize.y);
 			vTextureCoordAboveRight = aTextureCoord + vec2(1.0 / uSize.x, 1.0 / uSize.y);
-			vTextureCoordAboveRightRight = aTextureCoord + vec2(2.0 / uSize.x, 1.0 / uSize.y);
 
 			vTextureCoordLeft = aTextureCoord + vec2(-1.0 / uSize.x, 0.0);
-			vTextureCoordLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, 0.0);
 			vTextureCoordRight = aTextureCoord + vec2(1.0 / uSize.x, 0.0);
-			vTextureCoordRightRight = aTextureCoord + vec2(2.0 / uSize.x, 0.0);
 		
 			vTextureCoordBelow = aTextureCoord + vec2(0.0, -1.0 / uSize.y);
 			vTextureCoordBelowLeft = aTextureCoord + vec2(-1.0 / uSize.x, -1.0 / uSize.y);
-			vTextureCoordBelowLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, -1.0 / uSize.y);
 			vTextureCoordBelowRight = aTextureCoord + vec2(1.0 / uSize.x, -1.0 / uSize.y);
-			vTextureCoordBelowRightRight = aTextureCoord + vec2(2.0 / uSize.x, -1.0 / uSize.y);
 		}
 	</script>
 </head>
