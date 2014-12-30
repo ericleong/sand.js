@@ -114,7 +114,7 @@ Sand.prototype.initBuffers = function() {
 Sand.prototype.next = function() {
 	this.sandBuffer = this.sandBuffer == 0 ? 1 : 0;
 
-	this.gl.useProgram(this.program);
+	this.gl.useProgram(this.sandBuffer == 0 ? this.programLeft : this.programRight);
 	
 	// draw onto framebuffer
 	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.sandBuffer == 0 ? this.sandFrameBuffer0 : this.sandFrameBuffer1);
@@ -127,32 +127,30 @@ Sand.prototype.next = function() {
 	// array, setting attributes, and pushing it to this.GL.
 
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesBuffer);
-	this.gl.vertexAttribPointer(this.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+	this.gl.vertexAttribPointer(this.sandBuffer == 0 ? this.aVertexPositionLeft : this.aVertexPositionRight, 3, this.gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesTextureCoordBuffer);
-	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
+	this.gl.vertexAttribPointer(this.sandBuffer == 0 ? this.aTextureCoordLeft : this.aTextureCoordRight, 2, this.gl.FLOAT, false, 0, 0);
 	
 	// Specify the texture to map onto the face.
-	this.gl.uniform1i(this.uSampler, this.sandBuffer == 0 ? 1 : 0);
+	this.gl.uniform1i(this.sandBuffer == 0 ? this.uSamplerLeft : this.uSamplerRight, this.sandBuffer == 0 ? 1 : 0);
 	
 	this.gl.activeTexture(this.sandBuffer == 0 ? this.gl.TEXTURE1 : this.gl.TEXTURE0);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.sandBuffer == 0 ? this.sandTexture1 : this.sandTexture0);
 	
 	// Pass cells texture
-	this.gl.uniform1i(this.uCells, 2);
+	this.gl.uniform1i(this.sandBuffer == 0 ? this.uCellsLeft : this.uCellsRight, 2);
 	
 	this.gl.activeTexture(this.gl.TEXTURE2);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.cellsTexture);
 	
 	// Pass cells texture
-	this.gl.uniform1i(this.uRules, 3);
+	this.gl.uniform1i(this.sandBuffer == 0 ? this.uRulesLeft : this.uRulesRight, 3);
 	
 	this.gl.activeTexture(this.gl.TEXTURE3);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.rulesTexture);
-	
-	this.gl.uniform1i(this.uBias, this.sandBuffer);
 
 	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 }
@@ -161,27 +159,50 @@ Sand.prototype.next = function() {
 // initShaders
 //
 Sand.prototype.initShaders = function(canvas) {
-	this.program = SandUtils.createProgram(this.gl, 'shader-vs-sand', 'shader-fs-sand');
+
+	/* left bias */
+	this.programLeft = SandUtils.createProgram(this.gl, 'shader-vs-sand-left', 'shader-fs-sand-left');
 
 	// vertex shader uniforms
-	this.uSize = this.gl.getUniformLocation(this.program, 'uSize');
+	var uSize = this.gl.getUniformLocation(this.programLeft, 'uSize');
 
 	// set the size of the canvas
-	this.gl.useProgram(this.program);
-	this.gl.uniform2fv(this.uSize, [canvas.width, canvas.height]);
+	this.gl.useProgram(this.programLeft);
+	this.gl.uniform2fv(uSize, [canvas.width, canvas.height]);
 
 	// fragment shader uniforms
-	this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
-	this.uCells = this.gl.getUniformLocation(this.program, 'uCells');
-	this.uRules = this.gl.getUniformLocation(this.program, 'uRules');
-	this.uBias = this.gl.getUniformLocation(this.program, 'uBias');
+	this.uSamplerLeft = this.gl.getUniformLocation(this.programLeft, 'uSampler');
+	this.uCellsLeft = this.gl.getUniformLocation(this.programLeft, 'uCells');
+	this.uRulesLeft = this.gl.getUniformLocation(this.programLeft, 'uRules');
 
 	// vertex attributes
-	this.aVertexPosition = this.gl.getAttribLocation(this.program, 'aVertexPosition');
-	this.gl.enableVertexAttribArray(this.aVertexPosition);
+	this.aVertexPositionLeft = this.gl.getAttribLocation(this.programLeft, 'aVertexPosition');
+	this.gl.enableVertexAttribArray(this.aVertexPositionLeft);
 
-	this.aTextureCoord = this.gl.getAttribLocation(this.program, 'aTextureCoord');
-	this.gl.enableVertexAttribArray(this.aTextureCoord);
+	this.aTextureCoordLeft = this.gl.getAttribLocation(this.programLeft, 'aTextureCoord');
+	this.gl.enableVertexAttribArray(this.aTextureCoordLeft);
+
+	/* right bias */
+	this.programRight = SandUtils.createProgram(this.gl, 'shader-vs-sand-right', 'shader-fs-sand-right');
+
+	// vertex shader uniforms
+	var uSize = this.gl.getUniformLocation(this.programRight, 'uSize');
+
+	// set the size of the canvas
+	this.gl.useProgram(this.programRight);
+	this.gl.uniform2fv(uSize, [canvas.width, canvas.height]);
+
+	// fragment shader uniforms
+	this.uSamplerRight = this.gl.getUniformLocation(this.programRight, 'uSampler');
+	this.uCellsRight = this.gl.getUniformLocation(this.programRight, 'uCells');
+	this.uRulesRight = this.gl.getUniformLocation(this.programRight, 'uRules');
+
+	// vertex attributes
+	this.aVertexPositionRight = this.gl.getAttribLocation(this.programRight, 'aVertexPosition');
+	this.gl.enableVertexAttribArray(this.aVertexPositionRight);
+
+	this.aTextureCoordRight = this.gl.getAttribLocation(this.programRight, 'aTextureCoord');
+	this.gl.enableVertexAttribArray(this.aTextureCoordRight);
 }
 
 Sand.prototype.initTextures = function(canvas, config) {
