@@ -363,33 +363,6 @@ function togglePause() {
 	paused = !paused;
 }
 
-function prepareInput() {
-	// need to set the alpha properly before passing it to the sand buffer
-
-	var cell = getCurrentCell();
-
-	var maskContext = input.maskCanvas.getContext('2d');
-
-	maskContext.save();
-
-	maskContext.globalCompositeOperation = 'source-in';
-	maskContext.fillStyle = getRGB(cell.color);
-	maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
-
-	maskContext.restore();
-
-
-	var inputContext = input.inputCanvas.getContext('2d');
-
-	inputContext.save();
-
-	inputContext.globalAlpha = cell.color[3];
-	inputContext.clearRect(0, 0, input.inputCanvas.width, input.inputCanvas.height);
-	inputContext.drawImage(input.maskCanvas, 0, 0);
-
-	inputContext.restore();
-}
-
 var t0, t1;
 
 function updateSand() {
@@ -414,11 +387,15 @@ function updateSand() {
 	}
 
 	if (updateInput > 0) {
-		if (updateInput == 2) {
-			prepareInput();
+		if (updateInput == 2) { // we are only drawing one cell type
+			var color = getCurrentCell().color;
+
+			input.drawColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0,  color[3]);
+		} else {
+			input.drawInput();
 		}
 
-		input.drawInput();
+		
 		updateInput = 0;
 	}
 }

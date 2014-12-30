@@ -104,3 +104,51 @@ Input.prototype.drawInput = function() {
 	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
 	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 }
+
+// draws the mask to the screen with the specified color
+Input.prototype.drawColor = function(r, g, b, a) {
+	// this relies on the current framebuffer to be set to the current sand buffer
+
+	this.updateTexture(this.maskTexture, this.maskCanvas);
+
+	/* add user input */
+
+	this.gl.useProgram(this.draw.program);
+	
+	// Draw the rect by binding the array buffer to the rect's vertices
+	// array, setting attributes, and pushing it to GL.
+
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.draw.rectVerticesBuffer);
+	this.gl.vertexAttribPointer(this.draw.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+
+	// Set the texture coordinates attribute for the vertices.
+	
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.draw.rectVerticesTextureCoordBuffer);
+	this.gl.vertexAttribPointer(this.draw.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
+
+	/* mask */
+
+	// Specify the texture to use.
+	this.gl.uniform1i(this.draw.uSampler, 5);
+
+	// draw mask
+	this.gl.blendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_ALPHA);
+
+	// draw user input mask
+	this.gl.activeTexture(this.gl.TEXTURE5);
+	this.gl.bindTexture(this.gl.TEXTURE_2D, this.maskTexture);
+
+	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+	// draw the color we want
+	this.gl.blendFuncSeparate(this.gl.CONSTANT_COLOR, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.CONSTANT_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+	this.gl.blendColor(r, g, b, a);
+
+	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+	// clear mask
+	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.maskFrameBuffer);
+
+	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
+	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+}
