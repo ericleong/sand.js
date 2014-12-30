@@ -41,9 +41,6 @@ Draw.prototype.drawScene = function(texture) {
 	// draw onto screen
 	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
-	this.gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
 	this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
 	this.gl.colorMask(true, true, true, false);
 

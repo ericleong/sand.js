@@ -119,10 +119,6 @@ Sand.prototype.next = function() {
 	// draw onto framebuffer
 	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.sandBuffer == 0 ? this.sandFrameBuffer0 : this.sandFrameBuffer1);
 
-	// Clear the canvas before we start drawing on it.
-	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to black, transparent
-	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
 	// this fixes our problems with alpha
 	// remember, we are not using alpha for transparency
 	this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
