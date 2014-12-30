@@ -102,6 +102,7 @@ function updateCellsList() {
 
 		if (!checked && cell.color[3] > 0.5) {
 			radio.setAttribute('checked', '');
+			checked = true;
 		}
 
 		radios.push(radio);
@@ -225,6 +226,11 @@ function initUserInput(canvas) {
 		drawCanvas(input.maskCanvas, mousePos, 'rgba(255, 255, 255, 1.0)');
 
 		updateInput = 2;
+
+		if (paused) {
+			sand.bindFrameBuffer();
+			updateColor();
+		}
 	}
 
 	function handleMouseDown(evt) {
@@ -363,6 +369,12 @@ function togglePause() {
 	paused = !paused;
 }
 
+function updateColor() {
+	var color = getCurrentCell().color;
+
+	input.drawColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0,  color[3]);
+}
+
 var t0, t1;
 
 function updateSand() {
@@ -388,13 +400,10 @@ function updateSand() {
 
 	if (updateInput > 0) {
 		if (updateInput == 2) { // we are only drawing one cell type
-			var color = getCurrentCell().color;
-
-			input.drawColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0,  color[3]);
+			updateColor();
 		} else {
 			input.drawInput();
 		}
-
 		
 		updateInput = 0;
 	}

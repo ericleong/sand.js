@@ -106,6 +106,12 @@ Sand.prototype.initBuffers = function() {
 	this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
 }
 
+// this is used externally
+Sand.prototype.bindFrameBuffer = function() {
+	// draw onto framebuffer
+	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.sandBuffer == 0 ? this.sandFrameBuffer0 : this.sandFrameBuffer1);
+}
+
 //
 // next
 //
@@ -115,9 +121,9 @@ Sand.prototype.next = function() {
 	this.sandBuffer = this.sandBuffer == 0 ? 1 : 0;
 
 	this.gl.useProgram(this.sandBuffer == 0 ? this.programLeft : this.programRight);
-	
-	// draw onto framebuffer
-	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.sandBuffer == 0 ? this.sandFrameBuffer0 : this.sandFrameBuffer1);
+
+	// set the correct framebuffer
+	this.bindFrameBuffer();
 
 	// this fixes our problems with alpha
 	// remember, we are not using alpha for transparency
