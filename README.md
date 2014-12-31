@@ -129,7 +129,34 @@ sand.js checks this and similar cases to conserve cells.
 
 In the above case, different things happen if a cell is `occupied` or `unoccupied`. For a cellular automaton with two states, this is fine, but if we want to add more states, we need a more general method for deciding if two cells should swap.
 
-sand.js first compares the current cell's density to the cell below it. If it is higher, then a swap occurs, if not, it checks the cell above. This is useful becauase it maintains synchronocity - the cell below will notice that it should swap with the cell above, and cells are conserved.
+One solution is to attach an additional parameter to each pixel: density. First compares the current cell's density to the cell below it. If it is higher, then a swap occurs, if not, it checks the cell above. This is useful becauase it conserves cells - the cell below will notice that it should swap with the cell above, and cells are conserved.
+
+### density stacking
+
+Occasionally, cells may stack so that a cell needs to swap with both the one above it and the one below it:
+
+| 2 |
+|---|
+| 1 |
+| 0 |
+
+This situation is impossible to resolve by only looking at the local neighborhood using a synchronous approach, if we swap `0` and `1` at the same time as `1` and `2`, we could end up in one of two situations:
+
+| a | b |
+|---|---|
+| 1 | 1 |
+| 2 | 0 |
+| 1 | 1 |
+
+Obviously, cells are not conserved in either case. It may seem like a good idea to swap `0` and `2`, but this simply hides the problem by expanding the neighborhood, and the obvious next case is layering 4 cells deep. Another solution is to simply not do one of the swaps, thus requiring three iterations to solve the situation:
+
+| #0| #1| #2| #3|
+|---|---|---|---|
+| 2 | 1 | 1 | 0 |
+| 1 | 2 | 0 | 1 |
+| 0 | 0 | 2 | 2 |
+
+Unfortunately this requires the bottom cell to know the density of the top cell, but it is a worthwhile tradeoff to conserve cells. Also, if the center cell and the top cell don't actually swap (possibly specified in the rules), this solution also fails.
 
 ---
 
@@ -152,32 +179,3 @@ if `black` is the current cell and it is interacting with a `white` cell, then w
 | 1 | black | white |
 
 which states that the current cell must now be `white`. Each rule in the _config_ file corresponds to two entries in the rules table. There is a limit of 256 cell types, which would require 32768 rules - hopefully that is enough room!
-
----
-
-# issues
-
-There are many issues with this approach, a few of the major ones are outlined below.
-
-## density layering
-
-Occasionally, cells may layer so that a cell needs to swap with both the one above it and the one below it:
-
-| 2 |
-|---|
-| 1 |
-| 0 |
-
-This situation is impossible to resolve by only looking at the local neighborhood using a synchronous approach, if we swap `0` and `1` at the same time as `1` and `2`, we could end up in one of two situations:
-
-| a | b |
-|---|---|
-| 1 | 1 |
-| 2 | 0 |
-| 1 | 1 |
-
-Obviously, cells are not conserved in either case. It may seem like a good idea to swap `0` and `2`, but this simply hides the problem by expanding the neighborhood, and the obvious next case is layering 4 cells deep. The neighborhood expands ad infinitum, and it is no longer cellular automata.
-
-## determinism
-
-This is less of a problem and more of a difficult-to-resolve side-effect, but if you were to run sand.js with the same parameters multiple times, you would get the same results. It would be possible to do a probabilistic swap using a technique similar to density, but every interaction of neighboring cells needs checked by each cell to ensure that cells are conserved.
