@@ -163,10 +163,10 @@ There are many issues with this approach, a few of the major ones are outlined b
 
 Occasionally, cells may layer so that a cell needs to swap with both the one above it and the one below it:
 
-| 0 |
+| 2 |
 |---|
 | 1 |
-| 2 |
+| 0 |
 
 This situation is impossible to resolve by only looking at the local neighborhood using a synchronous approach, if we swap `0` and `1` at the same time as `1` and `2`, we could end up in one of two situations:
 
