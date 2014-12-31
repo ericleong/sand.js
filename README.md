@@ -35,6 +35,8 @@ _empty_ is the default background, and is black with a density of `0.5`. Cells w
 cell sand 255 255 255 1.0
 ```
 
+Note that there is a limit of 256 cell types, and all names must be unique. Due to implementation details, cells cannot have colors too similar to other cells - a good rule of thumb is one color channel must be at least 4 (3 bits) away from the nearest cell. For example, `255 0 0` and `253 0 0` are too close together, but `255 0 0` and `251 0 0` are just far enough apart. In other words, if your eyes can't tell the difference, they're probably too similar.
+
 ### rules
 
 Rules govern the interactions between cells. They are defined like this:
@@ -71,6 +73,8 @@ rule fire sand smoke fire
 ```
 
 Just make sure to put out the fire!
+
+Note that if there is more than one rule for a pair of cells, the only the last one is considered.
 
 ---
 
