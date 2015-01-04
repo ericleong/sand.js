@@ -3,8 +3,8 @@
 var Config = function(cellsCanvas, rulesCanvas) {
 	if (cellsCanvas === undefined) {
 		this.cellsCanvas = document.createElement('canvas');
-		this.cellsCanvas.width = 512;
-		this.cellsCanvas.height = 512;
+		this.cellsCanvas.width = 256;
+		this.cellsCanvas.height = 1;
 	} else {
 		this.cellsCanvas = cellsCanvas;
 	}
@@ -45,8 +45,12 @@ Config.prototype.setPixelRGBA = function(imageData, width, x, y, r, g, b, a) {
 };
 
 Config.prototype.setPixelColor = function(imageData, width, x, y, color) {
-	this.setPixelRGBA(imageData, width, x, y, color[0], color[1], color[2], color[3] * 255)
+	this.setPixelRGBA(imageData, width, x, y, color[0], color[1], color[2], 255)
 };
+
+Config.prototype.setPixelCell = function(imageData, width, x, y, cell) {
+	this.setPixelRGBA(imageData, width, x, y, cell.index, 0.0, 0.0, cell.density * 255)
+}
 
 Config.prototype.addCell = function(name, red, green, blue, density) {
 	var index = this.numCells;
@@ -54,20 +58,13 @@ Config.prototype.addCell = function(name, red, green, blue, density) {
 	this.cells[name] = {
 		index: index,
 		name: name,
-		color: [red, green, blue, density]
+		color: [red, green, blue],
+		density: density
 	};
 
 	this.index[index] = this.cells[name];
 
-	var blueScaled = blue * (64 - 1) / 255; // out of 64
-
-	var tileY = Math.floor(Math.floor(blueScaled) / 8.0);
-	var tileX = Math.floor(blueScaled) - (tileY * 8.0);
-
-	var x = Math.floor(((tileX * 0.125) + 0.5 / 512.0 + ((red / 255.0) * (0.125 - 1.0 / 512.0))) * 512.0);
-	var y = Math.floor(((tileY * 0.125) + 0.5 / 512.0 + ((green / 255.0) * (0.125 - 1.0 / 512.0))) * 512.0);
-
-	this.setPixelRGBA(this.cellsData, this.cellsCanvas.width, x, y, index, index, index, 255);	
+	this.setPixelColor(this.cellsData, this.cellsCanvas.width, index, 0, this.cells[name].color);	
 
 	this.numCells++;
 
@@ -81,8 +78,8 @@ Config.prototype.addRule = function(current, neighbor, newCurrent, newNeighbor) 
 	var newCurrentCell = this.cells[newCurrent];
 	var newNeighborCell = this.cells[newNeighbor];
 
-	this.setPixelColor(this.rulesData, this.rulesCanvas.width, currentCell.index, neighborCell.index, newCurrentCell.color);
-	this.setPixelColor(this.rulesData, this.rulesCanvas.width, neighborCell.index, currentCell.index, newNeighborCell.color);
+	this.setPixelCell(this.rulesData, this.rulesCanvas.width, currentCell.index, neighborCell.index, newCurrentCell);
+	this.setPixelCell(this.rulesData, this.rulesCanvas.width, neighborCell.index, currentCell.index, newNeighborCell);
 };
 
 Config.prototype.parse = function(text) {

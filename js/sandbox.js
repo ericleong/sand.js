@@ -33,7 +33,7 @@ function start() {
 			// because of CORS, outside image files cannot be loaded, so just show a blank canvas
 
 			var maskContext = input.maskCanvas.getContext('2d');
-			maskContext.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			maskContext.fillStyle = 'rgba(0, 0, 0, 1.0)';
 			maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
 
 			handleTextureLoaded(input.maskCanvas);
@@ -100,7 +100,7 @@ function updateCellsList() {
 		radio.setAttribute('type', 'radio');
 		radio.setAttribute('value', cell.name);
 
-		if (!checked && cell.color[3] > 0.5) {
+		if (!checked && cell.density > 0.5) {
 			radio.setAttribute('checked', '');
 			checked = true;
 		}
@@ -142,10 +142,15 @@ function handleTextureLoaded(image) {
 	// set densities
 	var inputData = inputContext.getImageData(0, 0, input.inputCanvas.width, input.inputCanvas.height);
 	var data = inputData.data;
-	for (var i = 3; i < data.length; i += 4) {
-		for (var j = 0; j < sand.config.index.length; j++) {
-			if (data[i - 3] == sand.config.index[j].color[0] && data[i - 2] == sand.config.index[j].color[1] && data[i - 1] == sand.config.index[j].color[2]) {
-				data[i] = sand.config.index[j].color[3] * 255;
+
+	for (var i = 0; i < data.length; i += 4) {
+		for (var j = 0; j < sand.config.index.length; j++) { // need a better search method
+			if (data[i] == sand.config.index[j].color[0] && data[i + 1] == sand.config.index[j].color[1] && data[i + 2] == sand.config.index[j].color[2]) {
+				// uses integers from 0 - 255
+				data[i] = sand.config.index[j].index;
+				data[i + 1] = 0.0;
+				data[i + 2] = 0.0;
+				data[i + 3] = sand.config.index[j].density * 255;
 			}
 		}
 	}
@@ -191,12 +196,8 @@ function relativeLuminance(R8bit, G8bit, B8bit) {
 	return L;
 }
 
-function getRGBA(color) {
-	return 'rgba(' + color[0] + ', ' + color[1] + ', ' + color[2] + ', ' + color[3].toFixed(3) + ')';
-}
-
 function animate() {
-	draw.drawScene(sand.sandBuffer == 0 ? sand.sandTexture0 : sand.sandTexture1);
+	draw.drawScene(sand.cellsTexture, sand.sandBuffer == 0 ? sand.sandTexture0 : sand.sandTexture1);
 
 	window.requestAnimationFrame(animate);
 }
@@ -340,7 +341,7 @@ function initUserInput(canvas) {
 	var saveSandbox = document.getElementById('save-sandbox');
 	saveSandbox.addEventListener('click', function(evt) {
 		// draw it again
-		draw.drawScene(sand.sandBuffer == 0 ? sand.sandTexture0 : sand.sandTexture1);
+		draw.drawScene(sand.cellsTexture, sand.sandBuffer == 0 ? sand.sandTexture0 : sand.sandTexture1);
 
 		// save it
 		saveSandbox.href = canvas.toDataURL();
@@ -370,9 +371,8 @@ function togglePause() {
 }
 
 function updateColor() {
-	var color = getCurrentCell().color;
-
-	input.drawColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0,  color[3]);
+	var cell = getCurrentCell();
+	input.drawColor(cell.index / 255.0, 0.0, 0.0, cell.density);
 }
 
 var t0, t1;

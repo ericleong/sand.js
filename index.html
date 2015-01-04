@@ -12,7 +12,7 @@
 
 	<link rel="manifest" href="manifest.json">
 	<link rel="icon" sizes="192x192" href="icon/launcher_icon.png">
-	<link href='http://fonts.googleapis.com/css?family=Pompiere' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="css/font.css">
 	<link rel="stylesheet" type="text/css" href="css/sandbox.css">
 
 	<script src="js/config.js"></script>
@@ -23,6 +23,17 @@
 	<script src="js/sandbox.js"></script>
 
 	<script id="shader-fs-draw" type="x-shader/x-fragment">
+		varying highp vec2 vTextureCoord;
+
+		uniform sampler2D uCells;
+		uniform sampler2D uSampler;
+
+		void main(void) {
+			gl_FragColor = texture2D(uCells, vec2(texture2D(uSampler, vTextureCoord).r, 0.5));
+		}
+	</script>
+
+	<script id="shader-fs-copy" type="x-shader/x-fragment">
 		varying highp vec2 vTextureCoord;
 
 		uniform sampler2D uSampler;
@@ -59,25 +70,10 @@
 		varying highp vec2 vTextureCoordBelowLeft;
 
 		uniform sampler2D uSampler;
-		uniform sampler2D uCells;
 		uniform sampler2D uRules;
 
-		mediump vec4 cellIndex(in mediump vec4 color) {
-			mediump float blueScaled = color.b * 63.0; // out of 64
-
-			mediump vec2 tile;
-			tile.y = floor(floor(blueScaled) / 8.0);
-			tile.x = floor(blueScaled) - (tile.y * 8.0);
-
-			mediump vec2 cellPos;
-			cellPos.x = (tile.x * 0.125) + 0.5 / 512.0 + (color.r * (0.125 - 1.0 / 512.0));
-			cellPos.y = (tile.y * 0.125) + 0.5 / 512.0 + (color.g * (0.125 - 1.0 / 512.0));
-
-			return texture2D(uCells, cellPos);
-		}
-
 		mediump vec4 swap(in mediump vec4 current, in mediump vec4 other) {
-			return texture2D(uRules, vec2(cellIndex(current).r, cellIndex(other).r));
+			return texture2D(uRules, vec2(current.r, other.r));
 		}
 
 		void main(void) {
@@ -152,25 +148,10 @@
 		varying highp vec2 vTextureCoordBelowRight;
 
 		uniform sampler2D uSampler;
-		uniform sampler2D uCells;
 		uniform sampler2D uRules;
 
-		mediump vec4 cellIndex(in mediump vec4 color) {
-			mediump float blueScaled = color.b * 63.0; // out of 64
-
-			mediump vec2 tile;
-			tile.y = floor(floor(blueScaled) / 8.0);
-			tile.x = floor(blueScaled) - (tile.y * 8.0);
-
-			mediump vec2 cellPos;
-			cellPos.x = (tile.x * 0.125) + 0.5 / 512.0 + (color.r * (0.125 - 1.0 / 512.0));
-			cellPos.y = (tile.y * 0.125) + 0.5 / 512.0 + (color.g * (0.125 - 1.0 / 512.0));
-
-			return texture2D(uCells, cellPos);
-		}
-
 		mediump vec4 swap(in mediump vec4 current, in mediump vec4 other) {
-			return texture2D(uRules, vec2(cellIndex(current).r, cellIndex(other).r));
+			return texture2D(uRules, vec2(current.r, other.r));
 		}
 
 		void main(void) {

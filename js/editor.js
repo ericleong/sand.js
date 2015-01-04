@@ -1,5 +1,7 @@
+var config;
+
 function start() {
-	var config = new Config(document.getElementById('cells'), document.getElementById('rules'));
+	config = new Config(document.getElementById('cells'), document.getElementById('rules'));
 
 	var updateButton = document.getElementById('update');
 	updateButton.addEventListener('click', function(evt) {

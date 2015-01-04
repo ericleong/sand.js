@@ -4,9 +4,7 @@ var Draw = function(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer) {
 	if (gl) {
 		this.gl = gl;
 
-		// Initialize the shaders; this is where all the lighting for the
-		// vertices and so forth is established.
-		
+		// Initialize the shaders		
 		this.initShaders();
 
 		this.rectVerticesBuffer = rectVerticesBuffer;
@@ -23,6 +21,7 @@ Draw.prototype.initShaders = function() {
 	this.program = SandUtils.createProgram(this.gl, 'shader-vs-draw', 'shader-fs-draw');
 
 	// uniforms
+	this.uCells = this.gl.getUniformLocation(this.program, 'uCells');
 	this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
 
 	// vertex attributes
@@ -33,7 +32,7 @@ Draw.prototype.initShaders = function() {
 	this.gl.enableVertexAttribArray(this.aTextureCoord);
 }
 
-Draw.prototype.drawScene = function(texture) {
+Draw.prototype.drawScene = function(cellsTexture, sandTexture) {
 	/* copy framebuffer to screen */
 
 	this.gl.useProgram(this.program);
@@ -55,10 +54,17 @@ Draw.prototype.drawScene = function(texture) {
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesTextureCoordBuffer);
 	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
 
+	// the cell color information
+	this.gl.uniform1i(this.uCells, 3);
+
+	this.gl.activeTexture(this.gl.TEXTURE3);
+	this.gl.bindTexture(this.gl.TEXTURE_2D, cellsTexture);
+
+	// the cell texture to draw
 	this.gl.uniform1i(this.uSampler, 4);
 
 	this.gl.activeTexture(this.gl.TEXTURE4);
-	this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+	this.gl.bindTexture(this.gl.TEXTURE_2D, sandTexture);
 
 	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 

@@ -5,6 +5,13 @@ var Input = function(draw) {
 		this.draw = draw;
 		this.gl = draw.gl;
 
+		// Initialize the shaders
+		this.initShaders();
+
+		// copy the buffers
+		this.rectVerticesBuffer = draw.rectVerticesBuffer;
+		this.rectVerticesTextureCoordBuffer = draw.rectVerticesTextureCoordBuffer;
+
 		// create a new canvas
 		this.inputCanvas = document.createElement('canvas');
 		this.maskCanvas = document.createElement('canvas');
@@ -18,6 +25,25 @@ var Input = function(draw) {
 
 		this.initTextures(this.inputCanvas, this.maskCanvas);
 	}
+}
+
+//
+// initShaders
+//
+// Initialize the shaders, so WebGL knows how to light our scene.
+//
+Input.prototype.initShaders = function() {
+	this.program = SandUtils.createProgram(this.gl, 'shader-vs-draw', 'shader-fs-copy');
+
+	// uniforms
+	this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
+
+	// vertex attributes
+	this.aVertexPosition = this.gl.getAttribLocation(this.program, 'aVertexPosition');
+	this.gl.enableVertexAttribArray(this.aVertexPosition);
+
+	this.aTextureCoord = this.gl.getAttribLocation(this.program, 'aTextureCoord');
+	this.gl.enableVertexAttribArray(this.aTextureCoord);
 }
 
 Input.prototype.initTextures = function(inputCanvas, maskCanvas) {
@@ -49,23 +75,23 @@ Input.prototype.drawInput = function() {
 
 	/* add user input */
 
-	this.gl.useProgram(this.draw.program);
+	this.gl.useProgram(this.program);
 	
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
 
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.draw.rectVerticesBuffer);
-	this.gl.vertexAttribPointer(this.draw.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesBuffer);
+	this.gl.vertexAttribPointer(this.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.draw.rectVerticesTextureCoordBuffer);
-	this.gl.vertexAttribPointer(this.draw.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesTextureCoordBuffer);
+	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
 
 	/* mask */
 
 	// Specify the texture to use.
-	this.gl.uniform1i(this.draw.uSampler, 5);
+	this.gl.uniform1i(this.uSampler, 5);
 
 	// draw mask
 	this.gl.blendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_ALPHA);
@@ -79,7 +105,7 @@ Input.prototype.drawInput = function() {
 	/* input */
 
 	// Specify the texture to use.
-	this.gl.uniform1i(this.draw.uSampler, 6);
+	this.gl.uniform1i(this.uSampler, 6);
 
 	// preserve alpha
 	this.gl.blendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
@@ -113,23 +139,23 @@ Input.prototype.drawColor = function(r, g, b, a) {
 
 	/* add user input */
 
-	this.gl.useProgram(this.draw.program);
+	this.gl.useProgram(this.program);
 	
 	// Draw the rect by binding the array buffer to the rect's vertices
 	// array, setting attributes, and pushing it to GL.
 
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.draw.rectVerticesBuffer);
-	this.gl.vertexAttribPointer(this.draw.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesBuffer);
+	this.gl.vertexAttribPointer(this.aVertexPosition, 3, this.gl.FLOAT, false, 0, 0);
 
 	// Set the texture coordinates attribute for the vertices.
 	
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.draw.rectVerticesTextureCoordBuffer);
-	this.gl.vertexAttribPointer(this.draw.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesTextureCoordBuffer);
+	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
 
 	/* mask */
 
 	// Specify the texture to use.
-	this.gl.uniform1i(this.draw.uSampler, 5);
+	this.gl.uniform1i(this.uSampler, 5);
 
 	// draw mask
 	this.gl.blendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_ALPHA);

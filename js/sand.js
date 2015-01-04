@@ -146,16 +146,10 @@ Sand.prototype.next = function() {
 	this.gl.activeTexture(this.sandBuffer == 0 ? this.gl.TEXTURE1 : this.gl.TEXTURE0);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.sandBuffer == 0 ? this.sandTexture1 : this.sandTexture0);
 	
-	// Pass cells texture
-	this.gl.uniform1i(this.sandBuffer == 0 ? this.uCellsLeft : this.uCellsRight, 2);
+	// Pass rules texture
+	this.gl.uniform1i(this.sandBuffer == 0 ? this.uRulesLeft : this.uRulesRight, 2);
 	
 	this.gl.activeTexture(this.gl.TEXTURE2);
-	this.gl.bindTexture(this.gl.TEXTURE_2D, this.cellsTexture);
-	
-	// Pass cells texture
-	this.gl.uniform1i(this.sandBuffer == 0 ? this.uRulesLeft : this.uRulesRight, 3);
-	
-	this.gl.activeTexture(this.gl.TEXTURE3);
 	this.gl.bindTexture(this.gl.TEXTURE_2D, this.rulesTexture);
 
 	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
@@ -178,7 +172,6 @@ Sand.prototype.initShaders = function(canvas) {
 
 	// fragment shader uniforms
 	this.uSamplerLeft = this.gl.getUniformLocation(this.programLeft, 'uSampler');
-	this.uCellsLeft = this.gl.getUniformLocation(this.programLeft, 'uCells');
 	this.uRulesLeft = this.gl.getUniformLocation(this.programLeft, 'uRules');
 
 	// vertex attributes
@@ -200,7 +193,6 @@ Sand.prototype.initShaders = function(canvas) {
 
 	// fragment shader uniforms
 	this.uSamplerRight = this.gl.getUniformLocation(this.programRight, 'uSampler');
-	this.uCellsRight = this.gl.getUniformLocation(this.programRight, 'uCells');
 	this.uRulesRight = this.gl.getUniformLocation(this.programRight, 'uRules');
 
 	// vertex attributes

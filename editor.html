@@ -11,18 +11,29 @@
 	<script src="js/editor.js"></script>
 </head>
 <body onload="start()">
-	<canvas id="cells" width="512" height="512">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
+	<canvas id="cells" width="256" height="1">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
 	<canvas id="rules" width="256" height="256">Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.</canvas>
 	<textarea id="config" rows="20" cols="40">cell empty 0 0 0 0.5
-cell sand 255 255 255 1.0
-cell wall 127 127 127 0.5
-cell fire 255 0 0 0.1
+cell sand 255 193 7 1.0
+cell wall 158 158 158 0.5
+cell water 0 145 234 0.9
+cell plant 100 221 23 0.8
+cell fire 213 0 0 0.1
 rule empty sand sand empty
 rule wall empty wall empty
 rule wall sand wall sand
 rule wall fire wall empty
 rule empty fire empty empty
-rule fire sand fire fire</textarea>
+rule fire sand sand empty
+rule plant empty plant empty
+rule plant fire fire fire
+rule plant sand plant sand
+rule plant wall plant wall
+rule empty water water empty
+rule water plant plant plant
+rule water sand sand water
+rule water fire water water
+rule water wall water wall</textarea>
 	<button id="update">update</button>
 	<div>
 		<a id="download-cells">download cells</a>
