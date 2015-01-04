@@ -162,20 +162,26 @@ Unfortunately this requires the bottom cell to know the density of the top cell,
 
 # implementation
 
-Cells are implemented as pixels on a webgl texture. Density is stored in the alpha channel, saving a large number of texture lookups. Rules are implemented using two textures, a index lookup table a rule table. Once it is determined that two cells are interacting, the rules are queried to determine the result.
+Cells are implemented as pixels on a webgl texture. The data is laid out like this:
 
-The index lookup table is a `512x512` LUT similar to those used by [color filters](https://github.com/mattdesl/glsl-lut) that maps a color to a index. The indices for the two interacting cells are used as coordinates in the rules table, a `256x256` texture. The table tells the current cell what cell to become. For example, the basic `empty` and `sand` case has a index lookup table like:
+| red | green | blue | alpha |
+|---|---|---|---|
+| cell index | _unused_ | _unused_ | density |
 
-| color | index |
+The `cell index` is dynamically generated when loading the config - it generally follows the order in the config, unless there are duplicates. When drawing the sand to the screen a `256x1` lookup table is used to determine the color. For example, the basic `empty` and `sand` case has a index lookup table like:
+
+| index | color |
 |---|---|
-| black | 0 |
-| white | 1 |
+| 0 | black |
+| 1 | amber |
 
-if `black` is the current cell and it is interacting with a `white` cell, then we go to `(0, 1)` in the rules table:
+Rules are implemented using another texture table. Once it is determined that two cells are interacting, the rules are queried to determine the result. The indices for the two interacting cells are used as coordinates in the rules table, a `256x256` texture. The table tells the current cell what cell to become.
+
+For example, if `0` (empty) is the current cell and it is interacting with a `1` (sand) cell, then we go to `(0, 1)` in the rules table:
 
 | index | 0 | 1 |
 |---|---|---|
-| 0 | black | white |
-| 1 | black | white |
+| 0 | `0` | `1` |
+| 1 | `0` | `1` |
 
-which states that the current cell must now be `white`. Each rule in the _config_ file corresponds to two entries in the rules table. There is a limit of 256 cell types, which would require 32768 rules - hopefully that is enough room!
+which states that the current cell must now be `1`, or `sand`. Each rule in the _config_ file corresponds to two entries in the rules table. There is a limit of 256 cell types, which would require 32768 rules.
