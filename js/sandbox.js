@@ -134,6 +134,7 @@ function updateCellsList() {
 
 function handleTextureLoaded(image) {
 	var inputContext = input.inputCanvas.getContext('2d');
+	inputContext.imageSmoothingEnabled = false;
 
 	inputContext.clearRect(0, 0, input.inputCanvas.width, input.inputCanvas.height);
 
