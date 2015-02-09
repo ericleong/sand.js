@@ -69,6 +69,11 @@
 		varying highp vec2 vTextureCoordBelow;
 		varying highp vec2 vTextureCoordBelowLeft;
 
+		varying highp vec2 vTextureCoordBelowLeftLeft;
+
+		varying highp vec2 vTextureCoordBelowBelowLeft;
+		varying highp vec2 vTextureCoordBelowBelowLeftLeft;
+
 		uniform sampler2D uSampler;
 		uniform sampler2D uRules;
 
@@ -86,13 +91,18 @@
 			mediump vec4 below = texture2D(uSampler, vTextureCoordBelow);
 			mediump vec4 belowleft = texture2D(uSampler, vTextureCoordBelowLeft);
 
-			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a && above.a <= current.a) { // fall to below
+			mediump vec4 belowleftleft = texture2D(uSampler, vTextureCoordBelowLeftLeft);
+
+			mediump vec4 belowbelowleft = texture2D(uSampler, vTextureCoordBelowBelowLeft);
+			mediump vec4 belowbelowleftleft = texture2D(uSampler, vTextureCoordBelowBelowLeftLeft);
+
+			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a && above.a <= current.a && (below.a <= belowbelowleft.a || belowleft.a > belowbelowleft.a)) { // fall to below
 				gl_FragColor = swap(current, below);
-			} else if (vTextureCoordBelow.y >= 0.0 && belowleft.a < current.a && left.a <= belowleft.a) { // left bias
+			} else if (vTextureCoordBelow.y >= 0.0 && belowleft.a < 1.0 && current.a < 1.0 && below.a >= current.a && belowleft.a < current.a && left.a <= belowleft.a && (belowleft.a <= belowbelowleft.a || left.a > belowbelowleft.a || belowbelowleft.a == 1.0) && (belowleft.a <= belowbelowleftleft.a || belowleftleft.a > belowbelowleftleft.a)) { // left bias
 				gl_FragColor = swap(current, belowleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && above.a > current.a && aboveabove.a <= above.a) { // take from above
 				gl_FragColor = swap(current, above);
-			} else if (vTextureCoordAbove.y <= 1.0 && aboveright.a > current.a && right.a >= aboveright.a) { // left bias
+			} else if (vTextureCoordAbove.y <= 1.0 && current.a < 1.0 && aboveright.a < 1.0 && aboveright.a > current.a && right.a >= aboveright.a) { // left bias
 				gl_FragColor = swap(current, aboveright);
 			} else {
 				gl_FragColor = current;
@@ -116,6 +126,11 @@
 		varying highp vec2 vTextureCoordBelow;
 		varying highp vec2 vTextureCoordBelowLeft;
 
+		varying highp vec2 vTextureCoordBelowLeftLeft;
+
+		varying highp vec2 vTextureCoordBelowBelowLeft;
+		varying highp vec2 vTextureCoordBelowBelowLeftLeft;
+
 		uniform highp vec2 uSize;
 
 		void main(void) {
@@ -131,6 +146,11 @@
 		
 			vTextureCoordBelow = aTextureCoord + vec2(0.0, -1.0 / uSize.y);
 			vTextureCoordBelowLeft = aTextureCoord + vec2(-1.0 / uSize.x, -1.0 / uSize.y);
+
+			vTextureCoordBelowLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, -1.0 / uSize.y);
+
+			vTextureCoordBelowBelowLeft = aTextureCoord + vec2(-1.0 / uSize.x, -2.0 / uSize.y);
+			vTextureCoordBelowBelowLeftLeft = aTextureCoord + vec2(-2.0 / uSize.x, -2.0 / uSize.y);
 		}
 	</script>
 
@@ -146,6 +166,11 @@
 		
 		varying highp vec2 vTextureCoordBelow;
 		varying highp vec2 vTextureCoordBelowRight;
+
+		varying highp vec2 vTextureCoordBelowRightRight;
+
+		varying highp vec2 vTextureCoordBelowBelowRight;
+		varying highp vec2 vTextureCoordBelowBelowRightRight;
 
 		uniform sampler2D uSampler;
 		uniform sampler2D uRules;
@@ -164,13 +189,18 @@
 			mediump vec4 below = texture2D(uSampler, vTextureCoordBelow);
 			mediump vec4 belowright = texture2D(uSampler, vTextureCoordBelowRight);
 
-			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a && above.a <= current.a) { // fall to below
+			mediump vec4 belowrightright = texture2D(uSampler, vTextureCoordBelowRightRight);
+
+			mediump vec4 belowbelowright = texture2D(uSampler, vTextureCoordBelowBelowRight);
+			mediump vec4 belowbelowrightright = texture2D(uSampler, vTextureCoordBelowBelowRightRight);
+
+			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a && above.a <= current.a && (below.a <= belowbelowright.a || belowright.a > belowbelowright.a)) { // fall to below
 				gl_FragColor = swap(current, below);
-			} else if (vTextureCoordBelow.y >= 0.0 && belowright.a < current.a && right.a <= belowright.a) { // right bias
+			} else if (vTextureCoordBelow.y >= 0.0 && belowright.a < 1.0 && current.a < 1.0 && below.a >= current.a && belowright.a < current.a && right.a <= belowright.a && (belowright.a <= belowbelowright.a || right.a > belowbelowright.a || belowbelowright.a == 1.0) && (belowright.a <= belowbelowrightright.a || belowrightright.a > belowbelowrightright.a)) { // right bias
 				gl_FragColor = swap(current, belowright);
 			} else if (vTextureCoordAbove.y <= 1.0 && above.a > current.a && aboveabove.a <= above.a) { // take from above
 				gl_FragColor = swap(current, above);
-			} else if (vTextureCoordAbove.y <= 1.0 && aboveleft.a > current.a && left.a >= aboveleft.a) { // right bias
+			} else if (vTextureCoordAbove.y <= 1.0 && current.a < 1.0 && aboveleft.a < 1.0 && aboveleft.a > current.a && left.a >= aboveleft.a) { // right bias
 				gl_FragColor = swap(current, aboveleft);
 			} else {
 				gl_FragColor = current;
@@ -194,6 +224,11 @@
 		varying highp vec2 vTextureCoordBelow;
 		varying highp vec2 vTextureCoordBelowRight;
 
+		varying highp vec2 vTextureCoordBelowRightRight;
+
+		varying highp vec2 vTextureCoordBelowBelowRight;
+		varying highp vec2 vTextureCoordBelowBelowRightRight;
+
 		uniform highp vec2 uSize;
 
 		void main(void) {
@@ -209,6 +244,11 @@
 		
 			vTextureCoordBelow = aTextureCoord + vec2(0.0, -1.0 / uSize.y);
 			vTextureCoordBelowRight = aTextureCoord + vec2(1.0 / uSize.x, -1.0 / uSize.y);
+
+			vTextureCoordBelowRightRight = aTextureCoord + vec2(2.0 / uSize.x, -1.0 / uSize.y);
+
+			vTextureCoordBelowBelowRight = aTextureCoord + vec2(1.0 / uSize.x, -2.0 / uSize.y);
+			vTextureCoordBelowBelowRightRight = aTextureCoord + vec2(2.0 / uSize.x, -2.0 / uSize.y);
 		}
 	</script>
 </head>
@@ -222,8 +262,8 @@
 		<div id="settings"><button id="pause">pause</button><div><a id="save-sandbox">save</a><a id="load-sandbox">load</a></div><input type="file" id="file-input" accept="image/*" onchange="handleImages(this.files)"></div>
 		<h2>config</h2>
 		<textarea id="config" rows="20" cols="30" wrap="off">cell empty 0 0 0 0.5
-cell sand 255 193 7 1.0
-cell wall 158 158 158 0.5
+cell sand 255 193 7 0.95
+cell wall 158 158 158 1.0
 cell water 0 145 234 0.9
 cell plant 100 221 23 0.8
 cell fire 213 0 0 0.1
