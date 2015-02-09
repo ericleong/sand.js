@@ -32,11 +32,12 @@ function start() {
 		if (window.location.protocol.indexOf('file:') == 0) {
 			// because of CORS, outside image files cannot be loaded, so just show a blank canvas
 
-			var maskContext = input.maskCanvas.getContext('2d');
-			maskContext.fillStyle = 'rgba(0, 0, 0, 1.0)';
-			maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
+			var inputContext = input.inputCanvas.getContext('2d');
+			var cell = sand.config.index[0]; // pick the first cell type
+			inputContext.fillStyle = 'rgba(' + cell.color[0] + ',' + cell.color[1] + ',' + cell.color[2] + ',1.0)';
+			inputContext.fillRect(0, 0, input.inputCanvas.width, input.inputCanvas.height);
 
-			handleTextureLoaded(input.maskCanvas);
+			handleTextureLoaded(input.inputCanvas);
 
 			// update canvas
 			window.clearInterval(updateSandInterval);
@@ -57,7 +58,7 @@ function start() {
 				// Set up to draw the scene periodically.
 				window.requestAnimationFrame(animate);
 			}
-			startupImage.src = './sand.png';
+			startupImage.src = './test.png';
 		}
 	}
 }
@@ -67,6 +68,11 @@ function handleImages(images) {
 		var image = new Image();
 		image.onload = function() { 
 			handleTextureLoaded(image);
+
+			if (paused) {
+				sand.bindFrameBuffer();
+				input.drawInput(input.inputData);
+			}
 		};
 		
 		var reader = new FileReader();
@@ -140,28 +146,20 @@ function handleTextureLoaded(image) {
 	}
 
 	// set densities
-	var inputData = inputContext.getImageData(0, 0, input.inputCanvas.width, input.inputCanvas.height);
-	var data = inputData.data;
+	input.inputData = inputContext.getImageData(0, 0, input.inputCanvas.width, input.inputCanvas.height);
+	var imageData = input.inputData.data;
 
-	for (var i = 0; i < data.length; i += 4) {
+	for (var i = 0; i < imageData.length; i += 4) {
 		for (var j = 0; j < sand.config.index.length; j++) { // need a better search method
-			if (data[i] == sand.config.index[j].color[0] && data[i + 1] == sand.config.index[j].color[1] && data[i + 2] == sand.config.index[j].color[2]) {
+			if (imageData[i] == sand.config.index[j].color[0] && imageData[i + 1] == sand.config.index[j].color[1] && imageData[i + 2] == sand.config.index[j].color[2]) {
 				// uses integers from 0 - 255
-				data[i] = sand.config.index[j].index;
-				data[i + 1] = 0.0;
-				data[i + 2] = 0.0;
-				data[i + 3] = sand.config.index[j].density * 255;
+				imageData[i] = sand.config.index[j].index;
+				imageData[i + 1] = 0;
+				imageData[i + 2] = 0;
+				imageData[i + 3] = sand.config.index[j].density * 255;
 			}
 		}
 	}
-
-	inputContext.putImageData(inputData, 0, 0);
-
-	var maskContext = input.maskCanvas.getContext('2d');
-
-	// create mask, draw the entire image
-	maskContext.fillStyle = 'rgba(255, 255, 255, 1.0)';
-	maskContext.fillRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
 
 	// tell updateSand() to update the buffers with input
 	updateInput = 1;
@@ -372,7 +370,8 @@ function togglePause() {
 
 function updateColor() {
 	var cell = getCurrentCell();
-	input.drawColor(cell.index / 255.0, 0.0, 0.0, cell.density);
+	input.drawColor(input.maskCanvas, cell.index / 255.0, 0.0, 0.0, cell.density);
+	input.maskCanvas.getContext('2d').clearRect(0, 0, input.maskCanvas.width, input.maskCanvas.height);
 }
 
 var t0, t1;
@@ -402,7 +401,7 @@ function updateSand() {
 		if (updateInput == 2) { // we are only drawing one cell type
 			updateColor();
 		} else {
-			input.drawInput();
+			input.drawInput(input.inputData);
 		}
 		
 		updateInput = 0;

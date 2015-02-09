@@ -58,20 +58,22 @@ Input.prototype.initTextures = function(inputCanvas, maskCanvas) {
 	this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 }
 
-Input.prototype.updateTexture = function(texture, canvas) {
+Input.prototype.updateTexture = function(texture, data) {
 	this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 	this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 	this.gl.pixelStorei(this.gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-	this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
-
-	canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+	this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
 }
 
-Input.prototype.drawInput = function() {
+// draws the image to the current framebuffer, after clearing it
+// the image is not cleared
+Input.prototype.drawInput = function(image) {
 	// this relies on the current framebuffer to be set to the current sand buffer
 
-	this.updateTexture(this.inputTexture, this.inputCanvas);
-	this.updateTexture(this.maskTexture, this.maskCanvas);
+	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
+	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+	this.updateTexture(this.inputTexture, image);
 
 	/* add user input */
 
@@ -88,27 +90,13 @@ Input.prototype.drawInput = function() {
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.rectVerticesTextureCoordBuffer);
 	this.gl.vertexAttribPointer(this.aTextureCoord, 2, this.gl.FLOAT, false, 0, 0);
 
-	/* mask */
-
-	// Specify the texture to use.
-	this.gl.uniform1i(this.uSampler, 5);
-
-	// draw mask
-	this.gl.blendFunc(this.gl.ZERO, this.gl.ONE_MINUS_SRC_ALPHA);
-
-	// draw user input mask
-	this.gl.activeTexture(this.gl.TEXTURE5);
-	this.gl.bindTexture(this.gl.TEXTURE_2D, this.maskTexture);
-
-	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-
 	/* input */
 
 	// Specify the texture to use.
 	this.gl.uniform1i(this.uSampler, 6);
 
 	// preserve alpha
-	this.gl.blendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+	this.gl.blendFunc(this.gl.ONE, this.gl.ZERO);
 
 	// draw user input
 	this.gl.activeTexture(this.gl.TEXTURE6);
@@ -118,12 +106,6 @@ Input.prototype.drawInput = function() {
 
 	this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 
-	// clear mask
-	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.maskFrameBuffer);
-
-	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
-	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-
 	// clear user input
 	this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.inputFrameBuffer);
 
@@ -132,10 +114,11 @@ Input.prototype.drawInput = function() {
 }
 
 // draws the mask to the screen with the specified color
-Input.prototype.drawColor = function(r, g, b, a) {
+// the mask is not cleared
+Input.prototype.drawColor = function(mask, r, g, b, a) {
 	// this relies on the current framebuffer to be set to the current sand buffer
 
-	this.updateTexture(this.maskTexture, this.maskCanvas);
+	this.updateTexture(this.maskTexture, mask);
 
 	/* add user input */
 
