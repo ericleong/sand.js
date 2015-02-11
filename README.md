@@ -23,7 +23,9 @@ A cell is a single element in the game. Every pixel in the sandbox should corres
 cell <name> <red> <green> <blue> <density>
 ```
 
-Valid color values are integers from `0` to `255`, and valid density values range from `0.0` to `1.0` (in practice, it is still mapped to an 8-bit integer, so precision is not infinite). *Note that densities of zero may behave unexpectedly!* Names cannot have spaces. Here is an example:
+Names cannot have spaces. Valid color values are integers from `0` to `255`, and valid density values range from `0.0` to `0.99` (it is still mapped to an 8-bit integer, so precision is not infinite).
+
+Here is an example:
 
 ```
 cell empty 0 0 0 0.5
@@ -32,10 +34,14 @@ cell empty 0 0 0 0.5
 _empty_ is the default background, and is black with a density of `0.5`. Cells with higher densities will fall, and cells with lower densities will float. Here is one possible way to write sand: 
 
 ```
-cell sand 255 255 255 1.0
+cell sand 255 255 255 0.95
 ```
 
-Note that there is a limit of 256 cell types, and all names must be unique. Due to implementation details, cells cannot have colors too similar to other cells - a good rule of thumb is one color channel must be at least 4 (3 bits) away from the nearest cell. For example, `255 0 0` and `253 0 0` are too close together, but `255 0 0` and `251 0 0` are just far enough apart. In other words, if your eyes can't tell the difference, they're probably too similar.
+##### notes
+
+* There is a limit of 256 cell types, and all names must be unique.
+* *Densities of zero may behave unexpectedly!*
+* Densities of `1.0` serve as immobile "walls". It is still important to define their rules correctly though.
 
 ### rules
 
@@ -94,9 +100,9 @@ and then the cells on the left and right:
 | &#x2002; | &#x25CF; | &#x2002; |
 | &#x2199; | &#x2002; | &#x2198; |
 
-Moved cells are marked so that they are not moved more than once a frame.
+Most falling sand games are written for the CPU and modify the sandbox (the rectangular region with all the cells) in place. One method involves iterating through the entire world and moving each cell, marking moved cells so that they are not moved more than once a frame. The most common optimization is to keep a list of "active" (not empty) cells and only move those. This unfortunately leads to a simulation that is slower when there are more cells, which is when it is the most interesting!
 
-Most falling sand games are written for the CPU and modify the sandbox (the rectangular region with all the cells) in place. Unfortunately this method is not very parallelizable, especially for GPUs.
+Neither method is easily parallelizable, which is necessary for it to run on the GPU.
 
 ## cellular automata
 
@@ -115,7 +121,7 @@ Two cells may contend for the same cell at the same time, and this may result in
   1. if _above_ is occupied, become occupied
   2. if _above right_ is occupied, become occupied
 
-Yet this is not enough. Consider this case:
+This is the cellular automata version of "swapping" cells. Yet this is not enough. Consider this case:
 
 | &#x25CB; | &#x25CF; |
 |---|---|
@@ -123,7 +129,7 @@ Yet this is not enough. Consider this case:
 
 The cell with the black circle shoud not fall to the lower left because it is blocked by the cell to the left, and the empty cell will become occupied because of the cell above it.
 
-sand.js checks this and similar cases to conserve cells.
+sand.js checks this and many other cases to conserve cells. This is why non-interacting cells ("walls") are a special density - cells that don't move violate the assumptions above.
 
 ## density
 
