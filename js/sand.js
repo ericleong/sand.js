@@ -204,16 +204,6 @@ Sand.prototype.initShaders = function(canvas) {
 }
 
 Sand.prototype.initTextures = function(canvas, config) {
-	var tempCanvas = document.createElement('canvas');
-
-	tempCanvas.width = canvas.width;
-	tempCanvas.height = canvas.height;
-
-	var context = tempCanvas.getContext('2d');
-
-	// keep buffers empty
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	
 	var tex = SandUtils.initTextureWithFrameBuffer(this.gl, canvas);
 	this.sandTexture0 = tex[0];
 	this.sandFrameBuffer0 = tex[1];
