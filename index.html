@@ -108,18 +108,18 @@
 
 			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a && above.a <= current.a && (belowbelow.a < below.a || below.a <= belowbelowleft.a || belowleft.a > belowbelowleft.a)) { // fall to below
 				gl_FragColor = swap(current, below);
-			} else if (vTextureCoordBelow.y >= 0.0 && belowleft.a < 1.0 && current.a < 1.0 && below.a >= current.a && belowleft.a < current.a && left.a <= belowleft.a && (belowleft.a <= belowbelowleft.a || left.a > belowbelowleft.a || belowbelowleft.a == 1.0) && (belowleft.a <= belowbelowleftleft.a || belowleftleft.a > belowbelowleftleft.a)) { // left bias
+			} else if (vTextureCoordBelow.y >= 0.0 && belowleft.a < 1.0 && current.a < 1.0 && below.a >= current.a && belowleft.a < current.a && (left.a <= belowleft.a || aboveleft.a > left.a) && (vTextureCoordBelowBelow.y < 0.0 || belowleft.a <= belowbelowleft.a || belowbelowleft.a == 1.0) && (vTextureCoordBelowBelow.y < 0.0 || belowleft.a <= belowbelowleftleft.a || belowleftleft.a > belowbelowleftleft.a)) { // left bias
 				gl_FragColor = swap(current, belowleft);
 			} else if (vTextureCoordAbove.y <= 1.0 && above.a > current.a && aboveabove.a <= above.a) { // take from above
 				gl_FragColor = swap(current, above);
 			} else if (vTextureCoordAbove.y <= 1.0 && current.a < 1.0 && aboveright.a < 1.0 && aboveright.a > current.a && right.a >= aboveright.a) { // left bias
 				gl_FragColor = swap(current, aboveright);
-			} else if (current.a < 1.0 && current.b < 0.5 && left.a < current.a && below.a >= current.a && belowleft.a >= current.a && aboveleft.a <= left.a && left.a <= belowleft.a && above.a < current.a && above.a <= left.a && (belowleftleft.a >= left.a || leftleft.a > belowleftleft.a) && (right.a <= current.a || right.a == 1.0)) { // move left
+			} else if (current.a < 1.0 && current.b < 0.5 && left.a < current.a && below.a >= current.a && belowleft.a >= current.a && aboveleft.a <= left.a && left.a <= belowleft.a && above.a < current.a && above.a <= left.a && (vTextureCoordBelowBelow.y < 0.0 || belowleftleft.a >= left.a || leftleft.a > belowleftleft.a) && (right.a <= current.a || right.a == 1.0)) { // move left
 				mediump vec4 newCell = swap(current, left);
 				newCell.g = 0.0;
 				newCell.b = 1.0;
 				gl_FragColor = newCell;
-			} else if (right.a < 1.0 && right.b < 0.5 && right.a > current.a && below.a >= current.a && below.a >= right.a && above.a <= current.a && aboveabove.a <= above.a && aboveright.a <= current.a && aboveright.a < right.a && right.a <= belowright.a && (current.a <= belowleft.a || left.a > belowleft.a) && (rightright.a <= right.a || rightright.a == 1.0)) { // take from right
+			} else if (right.a < 1.0 && right.b < 0.5 && right.a > current.a && below.a >= current.a && below.a >= right.a && above.a <= current.a && (above.a <= current.a || aboveabove.a <= above.a) && aboveright.a <= current.a && aboveright.a < right.a && right.a <= belowright.a && (current.a <= belowleft.a || left.a > belowleft.a) && (rightright.a <= right.a || rightright.a == 1.0)) { // take from right
 				mediump vec4 newCell = swap(current, right);
 				newCell.g = 1.0;
 				newCell.b = 0.0;
@@ -238,18 +238,18 @@
 
 			if (vTextureCoordBelow.y >= 0.0 && below.a < current.a && above.a <= current.a && (belowbelow.a < below.a || below.a <= belowbelowright.a || belowright.a > belowbelowright.a)) { // fall to below
 				gl_FragColor = swap(current, below);
-			} else if (vTextureCoordBelow.y >= 0.0 && belowright.a < 1.0 && current.a < 1.0 && below.a >= current.a && belowright.a < current.a && right.a <= belowright.a && (belowright.a <= belowbelowright.a || right.a > belowbelowright.a || belowbelowright.a == 1.0) && (belowright.a <= belowbelowrightright.a || belowrightright.a > belowbelowrightright.a)) { // right bias
+			} else if (vTextureCoordBelow.y >= 0.0 && belowright.a < 1.0 && current.a < 1.0 && below.a >= current.a && belowright.a < current.a && (right.a <= belowright.a || aboveright.a > right.a) && (vTextureCoordBelowBelow.y < 0.0 || belowright.a <= belowbelowright.a || belowbelowright.a == 1.0) && (vTextureCoordBelowBelow.y < 0.0 || belowright.a <= belowbelowrightright.a || belowrightright.a > belowbelowrightright.a)) { // right bias
 				gl_FragColor = swap(current, belowright);
 			} else if (vTextureCoordAbove.y <= 1.0 && above.a > current.a && aboveabove.a <= above.a) { // take from above
 				gl_FragColor = swap(current, above);
 			} else if (vTextureCoordAbove.y <= 1.0 && current.a < 1.0 && aboveleft.a < 1.0 && aboveleft.a > current.a && left.a >= aboveleft.a) { // right bias
 				gl_FragColor = swap(current, aboveleft);
-			} else if (current.a < 1.0 && current.g < 0.5 && right.a < current.a && below.a >= current.a && belowright.a >= current.a && aboveright.a <= right.a && right.a <= belowright.a && above.a < current.a && above.a <= right.a && (belowrightright.a >= right.a || rightright.a > belowrightright.a) && (left.a <= current.a || left.a == 1.0)) { // move right
+			} else if (current.a < 1.0 && current.g < 0.5 && right.a < current.a && below.a >= current.a && belowright.a >= current.a && aboveright.a <= right.a && right.a <= belowright.a && above.a < current.a && above.a <= right.a && (vTextureCoordBelowBelow.y < 0.0 || belowrightright.a >= right.a || rightright.a > belowrightright.a) && (left.a <= current.a || left.a == 1.0)) { // move right
 				mediump vec4 newCell = swap(current, right);
 				newCell.b = 0.0;
 				newCell.g = 1.0;
 				gl_FragColor = newCell;
-			} else if (left.a < 1.0 && left.g < 0.5 && left.a > current.a && below.a >= current.a && below.a >= left.a && above.a <= current.a && aboveabove.a <= above.a && aboveleft.a <= current.a && aboveleft.a < left.a && left.a <= belowleft.a && (current.a <= belowright.a || right.a > belowleft.a) && (leftleft.a <= left.a || leftleft.a == 1.0)) { // take from left
+			} else if (left.a < 1.0 && left.g < 0.5 && left.a > current.a && below.a >= current.a && below.a >= left.a && above.a <= current.a && (above.a <= current.a || aboveabove.a <= above.a) && aboveleft.a <= current.a && aboveleft.a < left.a && left.a <= belowleft.a && (current.a <= belowright.a || right.a > belowleft.a) && (leftleft.a <= left.a || leftleft.a == 1.0)) { // take from left
 				mediump vec4 newCell = swap(current, left);
 				newCell.b = 1.0;
 				newCell.g = 0.0;
