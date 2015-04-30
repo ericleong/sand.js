@@ -25,7 +25,7 @@ var Input = function(draw) {
 
 		this.initTextures(this.inputCanvas, this.maskCanvas);
 	}
-}
+};
 
 //
 // initShaders
@@ -44,7 +44,7 @@ Input.prototype.initShaders = function() {
 
 	this.aTextureCoord = this.gl.getAttribLocation(this.program, 'aTextureCoord');
 	this.gl.enableVertexAttribArray(this.aTextureCoord);
-}
+};
 
 Input.prototype.initTextures = function(inputCanvas, maskCanvas) {
 	var tex = SandUtils.initTextureWithFrameBuffer(this.gl, inputCanvas);
@@ -56,14 +56,14 @@ Input.prototype.initTextures = function(inputCanvas, maskCanvas) {
 	this.maskFrameBuffer = tex[1];
 
 	this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-}
+};
 
 Input.prototype.updateTexture = function(texture, data) {
 	this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 	this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 	this.gl.pixelStorei(this.gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 	this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
-}
+};
 
 // draws the image to the current framebuffer, after clearing it
 // the image is not cleared
@@ -111,7 +111,7 @@ Input.prototype.drawInput = function(image) {
 
 	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
 	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-}
+};
 
 // draws the mask to the screen with the specified color
 // the mask is not cleared
@@ -160,4 +160,4 @@ Input.prototype.drawColor = function(mask, r, g, b, a) {
 
 	this.gl.clearColor(0.0, 0.0, 0.0, 0.0);  // Clear to transparent
 	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-}
+};

@@ -1,3 +1,4 @@
+/* global SandUtils */
 'use strict';
 
 //

@@ -57,7 +57,7 @@ function start() {
 
 				// Set up to draw the scene periodically.
 				window.requestAnimationFrame(animate);
-			}
+			};
 			startupImage.src = './sand.png';
 		}
 	}

@@ -21,7 +21,7 @@ SandUtils.createProgram = function(gl, vertexShaderId, fragmentShaderId) {
 	}
 
 	return program;
-}
+};
 
 //
 // getShader
@@ -81,7 +81,7 @@ SandUtils.getShader = function(gl, id) {
 	}
 	
 	return shader;
-}
+};
 
 SandUtils.initTexture = function(gl, image, flip) {
 	flip = flip === undefined ? true : flip;
@@ -97,7 +97,7 @@ SandUtils.initTexture = function(gl, image, flip) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 	return texture;
-}
+};
 
 SandUtils.initTextureWithFrameBuffer = function(gl, image) {
 	var texture = this.initTexture(gl, image);
@@ -107,4 +107,4 @@ SandUtils.initTextureWithFrameBuffer = function(gl, image) {
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
 	return [texture, framebuffer];
-}
+};
