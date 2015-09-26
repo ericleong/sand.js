@@ -118,6 +118,10 @@ Sand.prototype.bindFrameBuffer = function() {
 // Advance the scene.
 //
 Sand.prototype.next = function() {
+	if (this.programLeft === undefined || this.programRight === undefined) {
+		return;
+	}
+
 	this.sandBuffer = this.sandBuffer == 0 ? 1 : 0;
 
 	this.gl.useProgram(this.sandBuffer == 0 ? this.programLeft : this.programRight);

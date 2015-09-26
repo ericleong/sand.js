@@ -7,20 +7,22 @@ SandUtils.createProgram = function(gl, vertexShaderId, fragmentShaderId) {
 	var vertexShader = SandUtils.getShader(gl, vertexShaderId);
 	var fragmentShader = SandUtils.getShader(gl, fragmentShaderId);
 	
-	// Create the shader programs
+	if (vertexShader && fragmentShader) {
+		// Create the shader programs
 	
-	var program = gl.createProgram();
-	gl.attachShader(program, vertexShader);
-	gl.attachShader(program, fragmentShader);
-	gl.linkProgram(program);
-	
-	// If creating the shader program failed, alert
-	
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		alert('Unable to initialize the shader program.');
+		var program = gl.createProgram();
+		gl.attachShader(program, vertexShader);
+		gl.attachShader(program, fragmentShader);
+		gl.linkProgram(program);
+		
+		// If creating the shader program failed, alert
+		
+		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+			console.log('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program));
+		} else {
+			return program;
+		}
 	}
-
-	return program;
 }
 
 //
@@ -76,7 +78,7 @@ SandUtils.getShader = function(gl, id) {
 	// See if it compiled successfully
 	
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+		console.log('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
 		return null;
 	}
 	

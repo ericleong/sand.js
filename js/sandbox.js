@@ -8,8 +8,6 @@ var frameDuration = 8; // ms -> 125 fps
 
 // update input hint
 var updateInput;
-
-var updateSand;
 var updateSandInterval;
 
 function start() {

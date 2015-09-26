@@ -20,16 +20,18 @@ var Draw = function(gl, rectVerticesBuffer, rectVerticesTextureCoordBuffer) {
 Draw.prototype.initShaders = function() {
 	this.program = SandUtils.createProgram(this.gl, 'shader-vs-draw', 'shader-fs-draw');
 
-	// uniforms
-	this.uCells = this.gl.getUniformLocation(this.program, 'uCells');
-	this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
-
-	// vertex attributes
-	this.aVertexPosition = this.gl.getAttribLocation(this.program, 'aVertexPosition');
-	this.gl.enableVertexAttribArray(this.aVertexPosition);
-
-	this.aTextureCoord = this.gl.getAttribLocation(this.program, 'aTextureCoord');
-	this.gl.enableVertexAttribArray(this.aTextureCoord);
+	if (this.program) {
+		// uniforms
+		this.uCells = this.gl.getUniformLocation(this.program, 'uCells');
+		this.uSampler = this.gl.getUniformLocation(this.program, 'uSampler');
+	
+		// vertex attributes
+		this.aVertexPosition = this.gl.getAttribLocation(this.program, 'aVertexPosition');
+		this.gl.enableVertexAttribArray(this.aVertexPosition);
+	
+		this.aTextureCoord = this.gl.getAttribLocation(this.program, 'aTextureCoord');
+		this.gl.enableVertexAttribArray(this.aTextureCoord);
+	}
 }
 
 Draw.prototype.drawScene = function(cellsTexture, sandTexture) {
