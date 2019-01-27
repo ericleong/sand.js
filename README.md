@@ -1,4 +1,4 @@
-![sand.js logo](/icon/launcher_icon.png?raw=true "the pyramids?")
+![sand.js logo](/icon/icon-196.png?raw=true "the pyramids?")
 
 sand.js
 =======
